@@ -1707,7 +1707,7 @@
                 // Перевірка видимості приватних каналів
                 if (c.is_private && c.owner_id !== String(myId) && !(c.allowed_viewers || []).includes(String(myId)) && !myIsAdmin) return '';
                 
-                const typeLabel = c.type === 'video' ? '📺 Відео' : (c.type === 'blog' ? '📝 Блог' : '🌐 Паблік');
+                const typeLabel = c.type === 'video' ? '  Відео' : (c.type === 'blog' ? '  Блог' : '  Паблік');
                 return `
                     <div class="list-item glass-panel card" style="margin-bottom: 10px; cursor: pointer; align-items: flex-start;" onclick="viewChannel('${c.id}')">
                         <img src="${c.avatar_url}" class="avatar-md">
@@ -1761,7 +1761,7 @@
                     ${bannerHtml}
                     <div class="channel-header-info">
                         <img src="${channel.avatar_url}" class="channel-avatar">
-                        <h2 style="margin-bottom: 5px; color: var(--primary);">${channel.name} ${channel.is_private ? '🔒' : ''}</h2>
+                        <h2 style="margin-bottom: 5px; color: var(--primary);">${channel.name} ${channel.is_private ? 'Приватний' : ''}</h2>
                         <div class="text-sub" style="font-size:11px; margin-bottom:5px;">Підписників: <b style="color:var(--primary)">${subCount || 0}</b> | Тип: ${channel.type}</div>
                         <p style="font-size: 12px; line-height:1.4; margin-bottom: 10px;">${channel.description || ''}</p>
                         <button class="${isSubbed ? 'btn-secondary' : 'btn-primary'}" style="width:auto;" onclick="toggleChannelSub('${channel.id}', ${isSubbed})">
@@ -1851,7 +1851,7 @@
                         <div class="post-footer" style="justify-content: space-between;">
                             <div class="flex-row">
                                 <button onclick="toggleChannelPostLike('${p.id}', '${channelId}')" class="btn-like ${isLiked ? 'active' : ''}">&hearts; (${p.likes || 0})</button>
-                                ${p.post_type === 'video' ? `<span class="text-sub" style="font-size:10px; margin-left:10px;">👁 Переглядів: ${p.views || 0}</span>` : ''}
+                                ${p.post_type === 'video' ? `<span class="text-sub" style="font-size:10px; margin-left:10px;">  Переглядів: ${p.views || 0}</span>` : ''}
                             </div>
                             <button onclick="toggleChannelComments('${p.id}')" class="btn-secondary" style="width:auto;">Коментарі</button>
                         </div>
