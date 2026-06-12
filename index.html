@@ -509,10 +509,31 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <script>
         const SUPABASE_URL = 'https://wggwvifpmuxdpbqqnsef.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_EeKKUkApAllsZgwgA_vD8g_iQPzKd0b'; 
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // --- ДОДАНО: СЕКРЕТНИЙ КЛЮЧ ТА ФУНКЦІЇ ШИФРУВАННЯ ---
+        const ENCRYPTION_SALT = "Bigion_Secure_Salt_2026!";
+
+        function encryptData(text, secretKey) {
+            if (!text) return "";
+            return CryptoJS.AES.encrypt(text, secretKey + ENCRYPTION_SALT).toString();
+        }
+
+        function decryptData(ciphertext, secretKey) {
+            if (!ciphertext) return "";
+            try {
+                const bytes = CryptoJS.AES.decrypt(ciphertext, secretKey + ENCRYPTION_SALT);
+                const originalText = bytes.toString(CryptoJS.enc.Utf8);
+                return originalText || "🔒 [Помилка розшифровки]";
+            } catch (e) {
+                return "🔒 [Зашифроване повідомлення]";
+            }
+        }
+        // -----------------------------------------------------
 
         let myId, myNick, currentChatId;
         let myInternalEmail = null; 
@@ -522,15 +543,6 @@
         let globalAppInfo = { name: "Bigion", desc: "Конфіденційна соціальна мережа" };
         const DEFAULT_AVATAR = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRLCFpHxyg6G5c4uQQy6U5SlgJr6qq6P6ot7Q&s";
         let userCache = {};
-
-        // ВАЖЛИВО: Функція для авторизації запитів до бази даних Postgres
-        async function applySecureSession() {
-            const sPass = localStorage.getItem('saved_user_pass');
-            if (myId && sPass) {
-                await _supabase.rpc('set_config', { setting: 'app.current_user_id', value: String(myId), is_local: true });
-                await _supabase.rpc('set_config', { setting: 'app.current_user_pass', value: String(sPass), is_local: true });
-            }
-        }
 
         window.onload = async () => {
             await fetchGlobalSettings();
@@ -589,7 +601,7 @@
 
             loadBanners();
             loadGroups(); loadUsers(); viewProfile(myId); initRealtime();
-            loadRecommendedChannels();
+            loadRecommendedChannels(); 
         }
 
         async function handleAuth(mode) {
@@ -846,25 +858,26 @@
             renderAdminBanners(); loadBanners();
         }
 
+        // --- ОНОВЛЕННЯ 1: ШИФРУВАННЯ ПОВІДОМЛЕНЬ ПЕРЕД ВІДПРАВКОЮ ---
         async function sendMessage() {
             const inp = document.getElementById('msg-input');
-            if(!inp.value.trim() || !currentChatId) return;
+            const rawText = inp.value.trim();
+            if(!rawText || !currentChatId) return;
             if (currentChatId.startsWith("group_") && myRestrictGroups) { alert("Вам заборонено надсилати повідомлення в групи та спільні чати."); return; }
             
-            await applySecureSession(); // ЗАХИСТ RLS
-            await _supabase.from('messages').insert([{ sender_id: myId, chat_id: currentChatId, text: inp.value.trim() }]);
+            // Шифруємо текст, використовуючи ID чату як ключ
+            const encryptedText = encryptData(rawText, currentChatId);
             
+            await _supabase.from('messages').insert([{ sender_id: myId, chat_id: currentChatId, text: encryptedText }]);
             inp.value = ""; loadMessages();
         }
 
+        // --- ОНОВЛЕННЯ 2: ДЕШИФРУВАННЯ ПОВІДОМЛЕНЬ В ЧАТІ ---
         async function loadMessages() {
             if(!currentChatId) return;
-            
-            await applySecureSession(); // ЗАХИСТ RLS
             const { data: messages } = await _supabase.from('messages').select('*').eq('chat_id', currentChatId).order('created_at', { ascending: true });
-            
             const box = document.getElementById('messages-list');
-            const senderIds = [...new Set((messages || []).map(m => m.sender_id))];
+            const senderIds = [...new Set(messages.map(m => m.sender_id))];
             const { data: users } = await _supabase.from('users').select('id_number, nickname, avatar_url, is_verified, is_admin').in('id_number', senderIds);
             if(users) users.forEach(u => userCache[u.id_number] = u);
 
@@ -872,6 +885,10 @@
                 const user = userCache[m.sender_id] || { nickname: 'User', avatar_url: DEFAULT_AVATAR };
                 const isMe = m.sender_id == myId; 
                 let b = user.is_verified ? `<span style="color:var(--verified); font-size:10px;">[v]</span>` : '';
+                
+                // Дешифруємо текст для відображення
+                const decryptedText = decryptData(m.text, currentChatId);
+
                 return `
                 <div class="msg-row ${isMe ? 'me' : ''}">
                     <img src="${user.avatar_url}" class="avatar-sm" onclick="viewProfile('${m.sender_id}')" style="cursor:pointer;">
@@ -880,7 +897,7 @@
                             <b>${user.nickname} ${b}</b>
                             <span>${new Date(m.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
                         </div>
-                        <div style="word-break: break-word; font-size: 12px;">${parseContent(m.text)}</div>
+                        <div style="word-break: break-word; font-size: 12px;">${parseContent(decryptedText)}</div>
                     </div>
                 </div>`;
             }).join('');
@@ -890,7 +907,6 @@
         async function openPrivate(id, nick) {
             const chatId = [myId, id].sort().join("_");
             if (myRestrictChatFirst) {
-                await applySecureSession(); // ЗАХИСТ RLS
                 const { data: existingMsgs } = await _supabase.from('messages').select('id').eq('chat_id', chatId).limit(1);
                 if (!existingMsgs || existingMsgs.length === 0) {
                     alert("Адміністрація обмежила вам можливість писати користувачам першим."); return;
@@ -1059,7 +1075,18 @@
             document.getElementById('wall-posts').innerHTML = '';
         }
 
-        function initRealtime() { _supabase.channel('any').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, (payload) => { const m = payload.new; if(m.sender_id != myId) { if(currentChatId === m.chat_id) loadMessages(); else if(m.chat_id.includes(myId) || m.chat_id.startsWith("group_")) showToast(m.sender_id, m.text); } }).subscribe(); }
+        // --- ОНОВЛЕННЯ 3: ДЕШИФРУВАННЯ У СПОВІЩЕННЯХ (ТОСТАХ) ---
+        function initRealtime() { 
+            _supabase.channel('any').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, (payload) => { 
+                const m = payload.new; 
+                if(m.sender_id != myId) { 
+                    if(currentChatId === m.chat_id) loadMessages(); 
+                    else if(m.chat_id.includes(myId) || m.chat_id.startsWith("group_")) {
+                        showToast(m.sender_id, decryptData(m.text, m.chat_id)); // Дешифруємо для тосту
+                    }
+                } 
+            }).subscribe(); 
+        }
         function showToast(senderId, text) { const container = document.getElementById('notification-container'); const t = document.createElement('div'); t.className = 'toast'; t.innerHTML = `<b>ID ${senderId}:</b> ${text.substring(0,30)}...`; t.onclick = () => viewProfile(senderId); container.appendChild(t); setTimeout(() => t.remove(), 5000); }
 
         async function loadUsers() {
@@ -1082,8 +1109,8 @@
 
         async function toggleLike(postId, authorId, isFeed = false) { const { data: post } = await _supabase.from('posts').select('likes, liked_by').eq('id', postId).single(); if (!post) return; let likedBy = post.liked_by || []; let likesCount = parseInt(post.likes) || 0; const uid = String(myId); if (likedBy.includes(uid)) { likedBy = likedBy.filter(i => i !== uid); likesCount = Math.max(0, likesCount - 1); } else { likedBy.push(uid); likesCount++; } await _supabase.from('posts').update({ likes: likesCount, liked_by: likedBy }).eq('id', postId); if(isFeed) loadFeed(); else loadPosts(authorId); }
         
+        // --- ОНОВЛЕННЯ 4: ДЕШИФРУВАННЯ СПИСКУ ОСТАННІХ ПОВІДОМЛЕНЬ (ВХІДНІ В ПРОФІЛІ) ---
         async function loadInbox() { 
-            await applySecureSession(); // ЗАХИСТ RLS
             const { data } = await _supabase.from('messages').select('*').order('created_at', { ascending: false }).limit(40); 
             if(!data) return; 
             const res = []; const seen = new Set(); 
@@ -1094,7 +1121,10 @@
                 } 
                 if(res.length >= 5) break; 
             } 
-            document.getElementById('inbox-list').innerHTML = res.map(m => `<div class="list-item" style="border: 1px solid #CCC; background: #F9F9F9;" onclick="openChatById('${m.chat_id}')"><div style="display:flex; flex-direction:column;"><b>${m.chat_id.startsWith('group_')?'Група':'ID '+m.sender_id}:</b> <span class="text-sub">${m.text.substring(0,35)}</span></div></div>`).join(''); 
+            document.getElementById('inbox-list').innerHTML = res.map(m => {
+                const decryptedText = decryptData(m.text, m.chat_id);
+                return `<div class="list-item" style="border: 1px solid #CCC; background: #F9F9F9;" onclick="openChatById('${m.chat_id}')"><div style="display:flex; flex-direction:column;"><b>${m.chat_id.startsWith('group_')?'Група':'ID '+m.sender_id}:</b> <span class="text-sub">${decryptedText.substring(0,35)}</span></div></div>`;
+            }).join(''); 
         }
 
         async function openChatById(chatId) { if(chatId.startsWith("group_")) { const gid = chatId.replace("group_", ""); const {data} = await _supabase.from('groups').select('name').eq('id', gid).single(); if(data) startGroupChat(gid, data.name); } else { const tid = chatId.split('_').find(x => x != myId); const {data} = await _supabase.from('users').select('nickname').eq('id_number', tid).single(); if(data) openPrivate(tid, data.nickname); } }
@@ -1491,6 +1521,7 @@
             showMailClient();
         }
 
+        // --- ОНОВЛЕННЯ 5: ШИФРУВАННЯ ПОШТИ ПРИ ВІДПРАВЦІ ---
         async function sendSocialEmail() {
             if (!myInternalEmail) {
                 alert("Вам необхідно спочатку створити власну пошту @spilkuvania.com для відправки повідомлень!");
@@ -1531,14 +1562,18 @@
                 return;
             }
             
-            await applySecureSession(); // ЗАХИСТ RLS
+            // Шифруємо тему і тіло листа
+            const mailKey = [myInternalEmail, receiverEmail].sort().join("_");
+            const encryptedSubject = encryptData(subject || '(Без теми)', mailKey);
+            const encryptedBody = encryptData(body, mailKey);
+
             const { error } = await _supabase
                 .from('social_mail')
                 .insert([{
                     sender_email: myInternalEmail,
                     receiver_email: receiverEmail,
-                    subject: subject || '(Без теми)',
-                    body: body
+                    subject: encryptedSubject,
+                    body: encryptedBody
                 }]);
                 
             if (error) {
@@ -1552,12 +1587,12 @@
             bodyInput.value = '';
         }
 
+        // --- ОНОВЛЕННЯ 6: ДЕШИФРУВАННЯ ПОШТИ ПРИ ПЕРЕГЛЯДІ ---
         async function loadInboxEmails() {
             const listEl = document.getElementById('inbox-emails-list');
             if (!listEl) return;
             if (!myInternalEmail) return;
             
-            await applySecureSession(); // ЗАХИСТ RLS
             const { data: emails, error } = await _supabase
                 .from('social_mail')
                 .select('*')
@@ -1579,6 +1614,11 @@
                 const bgStyle = mail.is_read ? '#FFFFFF' : '#FFFBE6';
                 const borderStyle = mail.is_read ? '1px solid #CCC' : '1px solid #F5E8A3';
                 
+                // Дешифруємо лист перед виводом
+                const mailKey = [mail.sender_email, mail.receiver_email].sort().join("_");
+                const decryptedSubject = decryptData(mail.subject, mailKey);
+                const decryptedBody = decryptData(mail.body, mailKey);
+
                 return `
                     <div class="list-item" style="flex-direction: column; align-items: flex-start; background: ${bgStyle}; border: ${borderStyle}; padding: 8px; margin-bottom: 4px; cursor: default;">
                         <div style="display:flex; justify-content:space-between; width:100%; border-bottom: 1px dashed #CCC; padding-bottom:4px; margin-bottom:6px; font-size:10px; color:var(--text-sub);">
@@ -1586,9 +1626,9 @@
                             <span>${dateStr}</span>
                         </div>
                         <div style="font-weight: bold; font-size: 11px; margin-bottom: 4px; color: var(--link-color);">
-                            Тема: ${escapeHtml(mail.subject)}
+                            Тема: ${escapeHtml(decryptedSubject)}
                         </div>
-                        <div style="font-size: 11px; line-height: 1.4; white-space: pre-wrap; width: 100%; word-wrap: break-word; color:#000;">${escapeHtml(mail.body)}</div>
+                        <div style="font-size: 11px; line-height: 1.4; white-space: pre-wrap; width: 100%; word-wrap: break-word; color:#000;">${escapeHtml(decryptedBody)}</div>
                         
                         ${!mail.is_read ? `
                             <div style="text-align: right; width: 100%; margin-top: 6px;">
@@ -1601,7 +1641,6 @@
         }
 
         async function markEmailAsRead(mailId) {
-            await applySecureSession(); // ЗАХИСТ RLS
             await _supabase.from('social_mail').update({ is_read: true }).eq('id', mailId);
             loadInboxEmails();
         }
