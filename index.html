@@ -523,6 +523,15 @@
         const DEFAULT_AVATAR = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRLCFpHxyg6G5c4uQQy6U5SlgJr6qq6P6ot7Q&s";
         let userCache = {};
 
+        // ВАЖЛИВО: Функція для авторизації запитів до бази даних Postgres
+        async function applySecureSession() {
+            const sPass = localStorage.getItem('saved_user_pass');
+            if (myId && sPass) {
+                await _supabase.rpc('set_config', { setting: 'app.current_user_id', value: String(myId), is_local: true });
+                await _supabase.rpc('set_config', { setting: 'app.current_user_pass', value: String(sPass), is_local: true });
+            }
+        }
+
         window.onload = async () => {
             await fetchGlobalSettings();
             const savedTheme = localStorage.getItem('theme');
@@ -580,7 +589,7 @@
 
             loadBanners();
             loadGroups(); loadUsers(); viewProfile(myId); initRealtime();
-            loadRecommendedChannels(); // ДОДАНО
+            loadRecommendedChannels();
         }
 
         async function handleAuth(mode) {
@@ -841,15 +850,21 @@
             const inp = document.getElementById('msg-input');
             if(!inp.value.trim() || !currentChatId) return;
             if (currentChatId.startsWith("group_") && myRestrictGroups) { alert("Вам заборонено надсилати повідомлення в групи та спільні чати."); return; }
+            
+            await applySecureSession(); // ЗАХИСТ RLS
             await _supabase.from('messages').insert([{ sender_id: myId, chat_id: currentChatId, text: inp.value.trim() }]);
+            
             inp.value = ""; loadMessages();
         }
 
         async function loadMessages() {
             if(!currentChatId) return;
+            
+            await applySecureSession(); // ЗАХИСТ RLS
             const { data: messages } = await _supabase.from('messages').select('*').eq('chat_id', currentChatId).order('created_at', { ascending: true });
+            
             const box = document.getElementById('messages-list');
-            const senderIds = [...new Set(messages.map(m => m.sender_id))];
+            const senderIds = [...new Set((messages || []).map(m => m.sender_id))];
             const { data: users } = await _supabase.from('users').select('id_number, nickname, avatar_url, is_verified, is_admin').in('id_number', senderIds);
             if(users) users.forEach(u => userCache[u.id_number] = u);
 
@@ -875,6 +890,7 @@
         async function openPrivate(id, nick) {
             const chatId = [myId, id].sort().join("_");
             if (myRestrictChatFirst) {
+                await applySecureSession(); // ЗАХИСТ RLS
                 const { data: existingMsgs } = await _supabase.from('messages').select('id').eq('chat_id', chatId).limit(1);
                 if (!existingMsgs || existingMsgs.length === 0) {
                     alert("Адміністрація обмежила вам можливість писати користувачам першим."); return;
@@ -1065,7 +1081,22 @@
         function startGroupChat(id, name) { if (myRestrictGroups) { alert("Доступ до груп заблоковано."); return; } currentChatId = "group_" + id; document.getElementById('profile-screen').style.display = 'none'; document.getElementById('chat-window').style.display = 'flex'; document.getElementById('chat-title').innerText = name; switchTab('col-main'); loadMessages(); }
 
         async function toggleLike(postId, authorId, isFeed = false) { const { data: post } = await _supabase.from('posts').select('likes, liked_by').eq('id', postId).single(); if (!post) return; let likedBy = post.liked_by || []; let likesCount = parseInt(post.likes) || 0; const uid = String(myId); if (likedBy.includes(uid)) { likedBy = likedBy.filter(i => i !== uid); likesCount = Math.max(0, likesCount - 1); } else { likedBy.push(uid); likesCount++; } await _supabase.from('posts').update({ likes: likesCount, liked_by: likedBy }).eq('id', postId); if(isFeed) loadFeed(); else loadPosts(authorId); }
-        async function loadInbox() { const { data } = await _supabase.from('messages').select('*').order('created_at', { ascending: false }).limit(40); if(!data) return; const res = []; const seen = new Set(); for(let m of data) { if(m.sender_id == myId) continue; if(m.chat_id.includes(myId) || m.chat_id.startsWith("group_")) { if(!seen.has(m.chat_id)) { seen.add(m.chat_id); res.push(m); } } if(res.length >= 5) break; } document.getElementById('inbox-list').innerHTML = res.map(m => `<div class="list-item" style="border: 1px solid #CCC; background: #F9F9F9;" onclick="openChatById('${m.chat_id}')"><div style="display:flex; flex-direction:column;"><b>${m.chat_id.startsWith('group_')?'Група':'ID '+m.sender_id}:</b> <span class="text-sub">${m.text.substring(0,35)}</span></div></div>`).join(''); }
+        
+        async function loadInbox() { 
+            await applySecureSession(); // ЗАХИСТ RLS
+            const { data } = await _supabase.from('messages').select('*').order('created_at', { ascending: false }).limit(40); 
+            if(!data) return; 
+            const res = []; const seen = new Set(); 
+            for(let m of data) { 
+                if(m.sender_id == myId) continue; 
+                if(m.chat_id.includes(myId) || m.chat_id.startsWith("group_")) { 
+                    if(!seen.has(m.chat_id)) { seen.add(m.chat_id); res.push(m); } 
+                } 
+                if(res.length >= 5) break; 
+            } 
+            document.getElementById('inbox-list').innerHTML = res.map(m => `<div class="list-item" style="border: 1px solid #CCC; background: #F9F9F9;" onclick="openChatById('${m.chat_id}')"><div style="display:flex; flex-direction:column;"><b>${m.chat_id.startsWith('group_')?'Група':'ID '+m.sender_id}:</b> <span class="text-sub">${m.text.substring(0,35)}</span></div></div>`).join(''); 
+        }
+
         async function openChatById(chatId) { if(chatId.startsWith("group_")) { const gid = chatId.replace("group_", ""); const {data} = await _supabase.from('groups').select('name').eq('id', gid).single(); if(data) startGroupChat(gid, data.name); } else { const tid = chatId.split('_').find(x => x != myId); const {data} = await _supabase.from('users').select('nickname').eq('id_number', tid).single(); if(data) openPrivate(tid, data.nickname); } }
         function showAbout() { clearMainArea(); document.getElementById('wall-posts').innerHTML = `<div class="tab-header">Про проєкт</div><div class="glass-panel card"><h2 style="color:var(--link-color); margin-bottom:10px;">${globalAppInfo.name}</h2><p class="text-sub" style="margin-bottom:15px;">Всі права захищено (с)</p><p style="line-height:1.4; white-space: pre-wrap;">${globalAppInfo.desc}</p></div>`; }
         function showWall() { viewProfile(myId); }
@@ -1346,12 +1377,6 @@
             loadVideoComments(videoId);
         }
 
-        async function deleteVideoComment(commentId, videoId) {
-            if(!confirm("Видалити цей коментар?")) return;
-            await _supabase.from('video_comments').delete().eq('id', commentId);
-            loadVideoComments(videoId);
-        }
-
         /* =========================================
            ФУНКЦІОНАЛ ВБУДОВАНОГО ПОШТОВОГО КЛІЄНТА ✉️
            ========================================= */
@@ -1506,6 +1531,7 @@
                 return;
             }
             
+            await applySecureSession(); // ЗАХИСТ RLS
             const { error } = await _supabase
                 .from('social_mail')
                 .insert([{
@@ -1531,6 +1557,7 @@
             if (!listEl) return;
             if (!myInternalEmail) return;
             
+            await applySecureSession(); // ЗАХИСТ RLS
             const { data: emails, error } = await _supabase
                 .from('social_mail')
                 .select('*')
@@ -1574,6 +1601,7 @@
         }
 
         async function markEmailAsRead(mailId) {
+            await applySecureSession(); // ЗАХИСТ RLS
             await _supabase.from('social_mail').update({ is_read: true }).eq('id', mailId);
             loadInboxEmails();
         }
