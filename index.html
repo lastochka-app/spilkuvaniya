@@ -460,7 +460,7 @@
                 <div id="messages-list"></div>
                 <div class="chat-input-area">
                     <button class="btn-secondary" style="width:auto;" onclick="sendImagePrompt()">IMG</button>
-                    <input type="text" id="msg-input" placeholder="Напишіть повідомлення..." onkeyup="if(event.keyCode===13) sendMessage()" style="margin:0; flex:1;">
+                    <input type="text" id="msg-input" placeholder="Напишите сообщение..." onkeyup="if(event.keyCode===13) sendMessage()" style="margin:0; flex:1;">
                     <button class="btn-primary" style="width:auto;" onclick="sendMessage()">Надіслати</button>
                 </div>
             </div>
@@ -487,6 +487,14 @@
                     <button class="btn-secondary" style="width:auto; min-width:60px;" onclick="goToId()">Знайти</button>
                 </div>
             </div>
+
+            <!-- СИСТЕМА РЕКОМЕНДАЦІЙ ПАБЛІКІВ -->
+            <div class="glass-panel card">
+                <span class="section-title">Рекомендовані Пабліки</span>
+                <div id="recommended-channels-list" class="scroll-area" style="max-height: 200px; display:flex; flex-direction:column; gap:4px;">
+                    Завантаження рекомендацій...
+                </div>
+            </div>
             
             <div class="glass-panel card">
                 <span class="section-title">Рекомендації</span>
@@ -509,7 +517,6 @@
         const SUPABASE_KEY = 'sb_publishable_TFXPSCgEIkOKpvLcVT3-Dg_DGLHV4OJ'; 
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // ДОДАНО: myInternalEmail
         let myId, myNick, currentChatId;
         let myInternalEmail = null; 
         let myIsAdmin = false;
@@ -556,7 +563,6 @@
             document.getElementById('main-ui').style.display = 'flex';
             if(window.innerWidth <= 850) document.getElementById('mob-nav').style.display = 'flex';
             
-            // ДОДАНО: ініціалізація пошти при вході
             myInternalEmail = user.internal_email || null;
 
             myRestrictPosts = user.restrict_posts || false;
@@ -576,7 +582,7 @@
             }
 
             loadBanners();
-            loadGroups(); loadUsers(); viewProfile(myId); initRealtime();
+            loadGroups(); loadUsers(); viewProfile(myId); loadPubChannelsRecommendations(); initRealtime();
         }
 
         async function handleAuth(mode) {
@@ -691,16 +697,44 @@
             }
         }
 
+        /* ОНОВЛЕНО: Тепер об'єднує звичайні пости та ВСІ відео з пабліків у спільну ленту */
         async function loadFeed() {
             clearMainArea();
-            const { data: posts } = await _supabase.from('posts').select('*').order('created_at', { ascending: false }).limit(50);
             const wall = document.getElementById('wall-posts');
+            wall.innerHTML = '<div class="tab-header">Стрічка оновлень</div><div style="text-align:center; padding:10px;">Завантаження...</div>';
+
+            // Отримуємо звичайні пости
+            const { data: regularPosts } = await _supabase.from('posts').select('*').order('created_at', { ascending: false }).limit(40);
+            
+            // Отримуємо відео-пости з пабліків (channels)
+            const { data: channelVideos } = await _supabase.from('channel_posts').select('*, channels(name)').eq('post_type', 'video').order('created_at', { ascending: false }).limit(40);
+
+            let combinedFeed = [];
+
+            if (regularPosts) {
+                regularPosts.forEach(p => combinedFeed.push({ ...p, type_flag: 'regular' }));
+            }
+            if (channelVideos) {
+                channelVideos.forEach(v => combinedFeed.push({ ...v, type_flag: 'channel_video' }));
+            }
+
+            // Сортуємо за часом створення (від нових до старих)
+            combinedFeed.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
             wall.innerHTML = '<div class="tab-header">Стрічка оновлень</div>';
-            if(posts) {
-                posts.forEach(p => {
-                    const isLiked = (p.liked_by || []).includes(String(myId));
+            
+            if (combinedFeed.length === 0) {
+                wall.innerHTML += '<div class="text-sub" style="text-align:center; padding:20px;">Контенту немає.</div>';
+                return;
+            }
+
+            combinedFeed.forEach(p => {
+                const isLiked = (p.liked_by || []).includes(String(myId));
+                const div = document.createElement('div'); 
+                div.className = 'post';
+
+                if (p.type_flag === 'regular') {
                     const canDelete = (p.author_id == myId || myIsAdmin);
-                    const div = document.createElement('div'); div.className = 'post';
                     div.innerHTML = `
                         <div class="post-header">
                             <a onclick="viewProfile('${p.author_id}')">Автор: ID ${p.author_id}</a>
@@ -720,9 +754,30 @@
                             </div>
                         </div>
                     `;
-                    wall.appendChild(div);
-                });
-            }
+                } else if (p.type_flag === 'channel_video') {
+                    const chName = p.channels ? p.channels.name : 'Паблік';
+                    div.innerHTML = `
+                        <div class="post-header" style="background: #FFFBE6; border-bottom: 1px solid #F5E8A3;">
+                            <span>🎥 Відео в пабліку: <a onclick="viewChannel('${p.channel_id}')" style="font-weight:bold; color:var(--primary);">${chName}</a></span>
+                            <span class="text-sub">${new Date(p.created_at).toLocaleDateString()}</span>
+                        </div>
+                        <div class="post-body" style="padding: 10px;">
+                            <div style="font-weight:bold; font-size:12px; margin-bottom:6px; color:#000;">${p.content}</div>
+                            <div style="background:#000; text-align:center;">
+                                <video controls style="width:100%; max-height:355px; display:block;">
+                                    <source src="${p.media_url}" type="video/mp4">
+                                </video>
+                            </div>
+                        </div>
+                        <div class="post-footer">
+                            <button onclick="toggleChannelPostLike('${p.id}', null, true)" class="btn-like ${isLiked ? 'active' : ''}">&hearts; (${p.likes || 0})</button>
+                            <span class="text-sub" style="font-size:10px; margin-left:auto;">👁 Переглядів: ${p.views || 0}</span>
+                            <button onclick="viewChannel('${p.channel_id}')" class="btn-secondary" style="width:auto;">Перейти в Паблік</button>
+                        </div>
+                    `;
+                }
+                wall.appendChild(div);
+            });
         }
 
         async function toggleComments(postId) {
@@ -1354,7 +1409,7 @@
 
         function showMailClient() {
             clearMainArea(); 
-            switchTab('col-main'); // Перемикання для мобільної версії
+            switchTab('col-main'); 
             const wall = document.getElementById('wall-posts');
             
             let emailStatusHTML = '';
@@ -1585,15 +1640,26 @@
         }
 
         /* =========================================
-           ФУНКЦІОНАЛ ПУБЛІЧНИХ КАНАЛІВ 📢
+           ФУНКЦІОНАЛ ПУБЛІЧНИХ КАНАЛІВ (ПАБЛІКІВ) 📢
            ========================================= */
 
+        /* ОНОВЛЕНО: Додано інтерактивний глобальний пошук пабліків */
         function showChannelsList() {
             clearMainArea();
             const wall = document.getElementById('wall-posts');
             wall.innerHTML = `
-                <div class="tab-header">Публічні канали</div>
+                <div class="tab-header">Публічні канали (Пабліки)</div>
                 <button class="btn-dashed" style="width: 100%; margin-bottom: 12px; padding: 10px;" onclick="showChannelCreationForm()">+ Створити свій канал</button>
+                
+                <!-- Пошук пабліків -->
+                <div class="glass-panel card" style="margin-bottom:12px;">
+                    <span class="section-title">Пошук пабліків</span>
+                    <div class="flex-row">
+                        <input type="text" id="channel-search-query" placeholder="Введіть назву або опис пабліку..." style="margin:0;" onkeyup="loadChannels(this.value)">
+                        <button class="btn-secondary" style="width:auto; min-width:80px;" onclick="loadChannels(document.getElementById('channel-search-query').value)">Шукати</button>
+                    </div>
+                </div>
+
                 <div id="channels-feed" class="scroll-area">Завантаження...</div>
             `;
             loadChannels();
@@ -1663,39 +1729,54 @@
                 banner_url: document.getElementById('chan-banner').value.trim(),
                 is_private: isPrivate,
                 allowed_viewers: viewers,
-                allowed_posters: posters
+                allowed_posters: posters,
+                subscribers: []
             }]);
             
             showChannelsList();
+            loadPubChannelsRecommendations();
         }
 
-        async function loadChannels() {
+        /* ОНОВЛЕНО: Тепер приймає query-фільтр для динамічного пошуку */
+        async function loadChannels(query = '') {
             const feed = document.getElementById('channels-feed');
-            const { data: channels } = await _supabase.from('channels').select('*').order('created_at', { ascending: false });
+            if(!feed) return;
+
+            let dbQuery = _supabase.from('channels').select('*');
             
-            if (!channels || channels.length === 0) {
-                feed.innerHTML = '<div class="text-sub">Каналів ще немає.</div>'; return;
+            if (query.trim() !== '') {
+                dbQuery = dbQuery.or(`name.ilike.%${query}%,description.ilike.%${query}%`);
+            }
+            
+            const { data: channels, error } = await dbQuery.order('created_at', { ascending: false });
+            
+            if (error || !channels || channels.length === 0) {
+                feed.innerHTML = '<div class="text-sub" style="text-align:center; padding:10px;">Нічого не знайдено за цим запитом.</div>'; 
+                return;
             }
             
             feed.innerHTML = channels.map(c => {
-                // Перевірка видимості приватних каналів у загальному списку
-                if (c.is_private && c.owner_id !== String(myId) && !c.allowed_viewers.includes(String(myId)) && !myIsAdmin) return '';
+                if (c.is_private && c.owner_id !== String(myId) && !(c.allowed_viewers || []).includes(String(myId)) && !myIsAdmin) return '';
                 
                 const typeLabel = c.type === 'video' ? '📺 Відео' : (c.type === 'blog' ? '📝 Блог' : '🌐 Паблік');
+                const subsCount = c.subscribers ? c.subscribers.length : 0;
+                
                 return `
                     <div class="list-item glass-panel card" style="margin-bottom: 10px; cursor: pointer; align-items: flex-start;" onclick="viewChannel('${c.id}')">
-                        <img src="${c.avatar_url}" class="avatar-md">
-                        <div>
-                            <b style="font-size: 13px;">${c.name}</b> <span class="channel-badge">${typeLabel}</span>
+                        <img src="${c.avatar_url || DEFAULT_AVATAR}" class="avatar-md">
+                        <div style="flex:1;">
+                            <b style="font-size: 13px; color:var(--link-color);">${c.name}</b> <span class="channel-badge">${typeLabel}</span>
                             ${c.is_private ? '<span class="channel-badge" style="background:#D00000;">Приватний</span>' : ''}
                             <br>
-                            <span class="text-sub" style="font-size: 11px;">${c.description ? c.description.substring(0, 50) + '...' : 'Без опису'}</span>
+                            <span class="text-sub" style="font-size: 11px;">${c.description ? c.description.substring(0, 80) : 'Без опису'}</span>
+                            <div style="font-size:9px; color:green; margin-top:4px; font-weight:bold;">Підписників: ${subsCount}</div>
                         </div>
                     </div>
                 `;
             }).join('');
         }
 
+        /* ОНОВЛЕНО: Додано кнопки підписки / відписки всередині пабліку */
         async function viewChannel(channelId) {
             clearMainArea();
             const wall = document.getElementById('wall-posts');
@@ -1704,7 +1785,6 @@
             const { data: channel } = await _supabase.from('channels').select('*').eq('id', channelId).single();
             if (!channel) return;
             
-            // Перевірка доступу
             if (channel.is_private && channel.owner_id !== String(myId) && !(channel.allowed_viewers || []).includes(String(myId)) && !myIsAdmin) {
                 wall.innerHTML = '<div class="glass-panel card" style="text-align:center; color:var(--danger); padding:20px;"><b>Доступ заборонено. Це приватний канал.</b></div>';
                 return;
@@ -1713,7 +1793,12 @@
             const canPost = channel.owner_id === String(myId) || (channel.allowed_posters || []).includes(String(myId)) || myIsAdmin;
             const bannerHtml = channel.banner_url ? `<img src="${channel.banner_url}" class="channel-banner">` : `<div class="channel-banner" style="background: var(--primary-grad);"></div>`;
 
-            // Форма публікації залежно від типу
+            // Обробка статусу підписки
+            const subsList = channel.subscribers || [];
+            const isSubbed = subsList.includes(String(myId));
+            const subBtnText = isSubbed ? "Відписатися від Пабліку" : "Підписатися на Паблік";
+            const subBtnClass = isSubbed ? "btn-secondary" : "btn-primary";
+
             let postFormHtml = '';
             if (canPost) {
                 postFormHtml = `<div class="glass-panel card" style="background: #F0F4F9; margin-top: 12px;">`;
@@ -1736,10 +1821,14 @@
                 <div class="glass-panel card" style="padding: 0; overflow: visible;">
                     ${bannerHtml}
                     <div class="channel-header-info">
-                        <img src="${channel.avatar_url}" class="channel-avatar">
+                        <img src="${channel.avatar_url || DEFAULT_AVATAR}" class="channel-avatar">
                         <h2 style="margin-bottom: 5px; color: var(--primary);">${channel.name} ${channel.is_private ? '🔒' : ''}</h2>
-                        <div class="text-sub" style="font-size:11px; margin-bottom:10px;">Власник ID: ${channel.owner_id} | Тип: ${channel.type}</div>
-                        <p style="font-size: 12px; line-height:1.4;">${channel.description || ''}</p>
+                        <div class="text-sub" style="font-size:11px; margin-bottom:10px;">Власник ID: ${channel.owner_id} | Тип: ${channel.type} | Підписників: <b style="color:green;">${subsList.length}</b></div>
+                        <p style="font-size: 12px; line-height:1.4; margin-bottom:12px;">${channel.description || ''}</p>
+                        
+                        <div class="flex-row" style="width:auto; display:inline-flex;">
+                            <button class="${subBtnClass}" style="width:auto; padding:5px 14px;" onclick="toggleChannelSubscription('${channel.id}')">${subBtnText}</button>
+                        </div>
                     </div>
                 </div>
                 ${postFormHtml}
@@ -1747,6 +1836,25 @@
             `;
             
             loadChannelPosts(channel.id);
+        }
+
+        /* ДОДАНО: Перемикання підписки на паблік */
+        async function toggleChannelSubscription(channelId) {
+            const { data: channel } = await _supabase.from('channels').select('subscribers').eq('id', channelId).single();
+            if (!channel) return;
+
+            let subs = channel.subscribers || [];
+            const uid = String(myId);
+
+            if (subs.includes(uid)) {
+                subs = subs.filter(id => id !== uid);
+            } else {
+                subs.push(uid);
+            }
+
+            await _supabase.from('channels').update({ subscribers: subs }).eq('id', channelId);
+            viewChannel(channelId);
+            loadPubChannelsRecommendations();
         }
 
         async function createChannelPost(channelId, cType) {
@@ -1776,7 +1884,10 @@
                 author_id: String(myId),
                 post_type: type,
                 content: content,
-                media_url: mediaUrl
+                media_url: mediaUrl,
+                likes: 0,
+                liked_by: [],
+                views: 0
             }]);
 
             viewChannel(channelId);
@@ -1790,7 +1901,6 @@
                 feed.innerHTML = '<div class="text-sub" style="text-align:center;">На цьому каналі поки немає записів.</div>'; return;
             }
 
-            // Збираємо імена авторів
             const authorIds = [...new Set(posts.map(p => p.author_id))];
             const { data: users } = await _supabase.from('users').select('id_number, nickname').in('id_number', authorIds);
             if(users) users.forEach(u => userCache[u.id_number] = u);
@@ -1840,7 +1950,6 @@
             }).join('');
         }
 
-        // Проста функція для збільшення переглядів відео при натисканні Play
         async function incrementChannelVideoView(postId) {
             window.viewedChannelVideos = window.viewedChannelVideos || [];
             if (window.viewedChannelVideos.includes(postId)) return;
@@ -1852,7 +1961,7 @@
             }
         }
 
-        async function toggleChannelPostLike(postId, channelId) {
+        async function toggleChannelPostLike(postId, channelId, isGlobalFeed = false) {
             const { data: post } = await _supabase.from('channel_posts').select('likes, liked_by').eq('id', postId).single();
             if (!post) return;
             let likedBy = post.liked_by || [];
@@ -1868,10 +1977,10 @@
             }
             
             await _supabase.from('channel_posts').update({ likes: likesCount, liked_by: likedBy }).eq('id', postId);
-            loadChannelPosts(channelId);
+            if (isGlobalFeed) loadFeed();
+            else loadChannelPosts(channelId);
         }
 
-        // --- Коментарі для каналів ---
         async function toggleChannelComments(postId) {
             const box = document.getElementById(`c-comments-box-${postId}`);
             if (box.style.display === 'none') { 
@@ -1917,6 +2026,53 @@
             await _supabase.from('channel_comments').insert([{ post_id: postId, author_id: String(myId), text: text }]);
             inp.value = ''; 
             loadChannelComments(postId);
+        }
+
+        /* =========================================
+           СИСТЕМА РЕКОМЕНДАЦІЙ ПАБЛІКІВ 📢
+           ========================================= */
+
+        /* ДОДАНО: Розумна рекомендація пабліків у правій колонці */
+        async function loadPubChannelsRecommendations() {
+            const container = document.getElementById('recommended-channels-list');
+            if(!container) return;
+
+            // Отримуємо відкриті пабліки
+            const { data: channels, error } = await _supabase
+                .from('channels')
+                .select('*')
+                .eq('is_private', false)
+                .limit(20);
+
+            if (error || !channels || channels.length === 0) {
+                container.innerHTML = '<span class="text-sub">Рекмендацій поки немає.</span>';
+                return;
+            }
+
+            // Відсікаємо пабліки, на які вже підписані
+            const uid = String(myId);
+            let un-subscribedChannels = channels.filter(c => !(c.subscribers || []).includes(uid) && c.owner_id !== uid);
+
+            // Сортуємо пабліки за спаданням популярності (кількістю підписників)
+            un-subscribedChannels.sort((a, b) => (b.subscribers || []).length - (a.subscribers || []).length);
+
+            // Показуємо топ-4 найпопулярніших
+            let renderList = un-subscribedChannels.slice(0, 4);
+
+            if (renderList.length === 0) {
+                container.innerHTML = '<span class="text-sub" style="color:green; font-weight:bold; padding:4px 0; display:block;">Ви підписані на всі пабліки! 🔥</span>';
+                return;
+            }
+
+            container.innerHTML = renderList.map(c => `
+                <div class="list-item" style="border: 1px dashed #D8E2F0; padding: 4px; background: #FFF; margin-bottom:2px;" onclick="viewChannel('${c.id}')">
+                    <img src="${c.avatar_url || DEFAULT_AVATAR}" class="avatar-sm" style="width:24px; height:24px;">
+                    <div style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                        <b style="font-size:11px; color:var(--link-color);">${c.name}</b>
+                        <div style="font-size:9px; color:var(--text-sub);">Підписників: ${(c.subscribers || []).length}</div>
+                    </div>
+                </div>
+            `).join('');
         }
     </script>
 </body>
