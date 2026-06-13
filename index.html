@@ -72,8 +72,8 @@
         }
         
         .header-logo::before {
-            content: "✉";
-            color: var(--blue);
+            content: "@";
+            color: var(--orange);
             margin-right: 2px;
             font-size: 28px;
             vertical-align: middle;
@@ -176,10 +176,10 @@
         }
         .btn-nav:hover { background: var(--panel-head); text-decoration: none; color: var(--link-hover); border-bottom: 1px solid var(--border-main); }
 
-        /* Avatars with classic borders */
-        .avatar-lg { width: 100px; height: 100px; object-fit: cover; border: 1px solid #000; }
-        .avatar-md { width: 50px; height: 50px; object-fit: cover; border: 1px solid #000; }
-        .avatar-sm { width: 32px; height: 32px; object-fit: cover; border: 1px solid #000; }
+        /* Avatars adapted to portrait photo dimensions (3:4 aspect ratio) */
+        .avatar-lg { width: 100px; height: 135px; object-fit: cover; border: 1px solid #000; }
+        .avatar-md { width: 50px; height: 68px; object-fit: cover; border: 1px solid #000; }
+        .avatar-sm { width: 32px; height: 43px; object-fit: cover; border: 1px solid #000; }
         
         .list-item { display: flex; align-items: center; gap: 6px; padding: 4px; cursor: pointer; border-bottom: 1px dotted var(--border-main); }
         .list-item:hover { background: #FFFFCC; }
@@ -259,7 +259,7 @@
         /* Стилі для каналів */
         .channel-banner { width: 100%; height: 100px; object-fit: cover; border-bottom: 1px solid #000; }
         .channel-header-info { padding: 5px 5px 5px 70px; background: #FFF; position: relative; border-bottom: 1px solid var(--border-main);}
-        .channel-avatar { position: absolute; top: -30px; left: 5px; width: 60px; height: 60px; border: 1px solid #000; object-fit: cover; background: #FFF; }
+        .channel-avatar { position: absolute; top: -30px; left: 5px; width: 60px; height: 80px; border: 1px solid #000; object-fit: cover; background: #FFF; }
         .channel-badge { background: var(--orange); color: #FFF; font-size: 9px; padding: 1px 3px; vertical-align: super; }
     </style>
 </head>
@@ -370,6 +370,19 @@
                 <div class="mobile-only" style="margin-bottom: 8px;">
                     <button class="btn-secondary" id="admin-mob-btn" style="display: none; color: var(--danger); width:100%; margin-bottom:4px;" onclick="showAdminPanel()">Адмінка</button>
                     <button class="btn-secondary" style="width:100%;" onclick="showSettings()">Налаштування</button>
+                </div>
+
+                <!-- Блок закріплених медіазаписів -->
+                <div id="pinned-media-area" class="card" style="background: #FFFFFF; display: none;">
+                    <div class="section-title" style="margin: 0 -8px 8px -8px; padding: 4px 8px;">📍 Закріплені медіазаписи</div>
+                    <div id="pinned-media-form" style="display: none; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px dashed var(--border-main);">
+                        <label class="form-label">Назва медіа:</label>
+                        <input type="text" id="pinned-title-input" placeholder="Наприклад: Мій улюблений трек">
+                        <label class="form-label">URL-посилання на медіафайл (зображення, аудіо або відео):</label>
+                        <input type="text" id="pinned-url-input" placeholder="http://... (mp3, mp4, png, jpg)">
+                        <button class="btn-primary" style="width: 100%;" onclick="addPinnedMedia()">Закріпити в профілі</button>
+                    </div>
+                    <div id="pinned-media-list" class="scroll-area" style="max-height: 300px; display: flex; flex-direction: column; gap: 6px;"></div>
                 </div>
 
                 <div id="wall-input-area" class="card" style="background: var(--panel-head); margin-top: 8px;">
@@ -610,6 +623,14 @@
             document.getElementById('follow-btn').style.display = (isMe || hideAll) ? 'none' : 'inline-block';
             document.getElementById('fav-btn').style.display = (isMe || hideAll) ? 'none' : 'inline-block';
             
+            // Налаштування та відображення закріплених медіа
+            const pinnedArea = document.getElementById('pinned-media-area');
+            if (pinnedArea) {
+                pinnedArea.style.display = hideAll ? 'none' : 'block';
+                document.getElementById('pinned-media-form').style.display = (isMe && !user.is_banned) ? 'block' : 'none';
+                loadPinnedMedia(userId);
+            }
+
             if(!isMe && !hideAll) { 
                 document.getElementById('write-btn').onclick = () => openPrivate(user.id, user.nickname); 
                 checkFollowStatus(userId); checkFavoriteStatus(userId); 
@@ -617,6 +638,75 @@
             
             updateFollowCounts(userId); 
             if(!hideAll) loadPosts(userId); else document.getElementById('wall-posts').innerHTML = '<div class="text-sub" style="text-align:center; padding: 20px;">Акаунт заблоковано.</div>';
+        }
+
+        /* Робота із закріпленими медіафайлами через Локальне Сховище для повної стабільності */
+        async function addPinnedMedia() {
+            const title = document.getElementById('pinned-title-input').value.trim();
+            const url = document.getElementById('pinned-url-input').value.trim();
+            if (!title || !url) { alert("Заповніть назву та введіть URL!"); return; }
+            
+            let storageKey = `pinned_media_${myId}`;
+            let currentMedia = JSON.parse(localStorage.getItem(storageKey)) || [];
+            
+            currentMedia.push({
+                id: Date.now().toString(),
+                title: title,
+                url: url,
+                created_at: new Date().toISOString()
+            });
+            
+            localStorage.setItem(storageKey, JSON.stringify(currentMedia));
+            document.getElementById('pinned-title-input').value = "";
+            document.getElementById('pinned-url-input').value = "";
+            loadPinnedMedia(myId);
+        }
+
+        function loadPinnedMedia(userId) {
+            const listEl = document.getElementById('pinned-media-list');
+            if (!listEl) return;
+            
+            let storageKey = `pinned_media_${userId}`;
+            let currentMedia = JSON.parse(localStorage.getItem(storageKey)) || [];
+            
+            if (currentMedia.length === 0) {
+                listEl.innerHTML = '<span class="text-sub" style="padding: 4px; display:block; text-align:center;">Закріплених медіазаписів немає.</span>';
+                return;
+            }
+            
+            const isCollapsibleOrDeletable = (userId === myId || myIsAdmin);
+            
+            listEl.innerHTML = currentMedia.map(m => {
+                let mediaTag = "";
+                const lowerUrl = m.url.toLowerCase();
+                
+                if (lowerUrl.endsWith('.mp3') || lowerUrl.endsWith('.wav') || lowerUrl.endsWith('.ogg')) {
+                    mediaTag = `<audio controls style="width:100%; margin-top:4px;"><source src="${m.url}"></audio>`;
+                } else if (lowerUrl.endsWith('.mp4') || lowerUrl.endsWith('.webm')) {
+                    mediaTag = `<video controls style="width:100%; max-height:240px; background:#000; margin-top:4px;"><source src="${m.url}" type="video/mp4"></video>`;
+                } else {
+                    mediaTag = `<img src="${m.url}" class="img-fluid" style="max-height:200px; display:block; margin-top:4px;" onclick="window.open('${m.url}')">`;
+                }
+                
+                return `
+                    <div style="padding:6px; border:1px solid var(--border-main); background:#FFF; margin-bottom:4px;">
+                        <div style="display:flex; justify-content:between; align-items:center; background:var(--panel-head); padding:2px 4px; font-weight:bold;">
+                            <span style="flex:1;">📌 ${escapeHtml(m.title)}</span>
+                            ${isCollapsibleOrDeletable ? `<a style="color:var(--danger); font-size:10px;" onclick="deletePinnedMedia('${m.id}', '${userId}')">[Відкріпити]</a>` : ''}
+                        </div>
+                        <div style="text-align:center; padding:2px;">${mediaTag}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function deletePinnedMedia(mediaId, userId) {
+            if (!confirm("Відкріпити цей запис?")) return;
+            let storageKey = `pinned_media_${userId}`;
+            let currentMedia = JSON.parse(localStorage.getItem(storageKey)) || [];
+            currentMedia = currentMedia.filter(m => m.id !== mediaId);
+            localStorage.setItem(storageKey, JSON.stringify(currentMedia));
+            loadPinnedMedia(userId);
         }
 
         async function createPost() {
@@ -866,7 +956,6 @@
         function showSettings() {
             clearMainArea();
             const wall = document.getElementById('wall-posts');
-            const currentBg = localStorage.getItem('custom_bg') || '';
             wall.innerHTML = `
                 <div class="tab-header">Особисті дані</div>
                 <div class="glass-panel card">
@@ -927,10 +1016,6 @@
             renderAdminsList();
         }
 
-        async function saveGlobalSettings() {
-            // Залишив для сумісності з вашим JS, хоч дизайн фіксований
-        }
-
         async function moderateUser(action, status) {
             const targetId = document.getElementById('admin-target-id').value.trim();
             if(!targetId) { alert("Вкажіть UUID!"); return; }
@@ -986,6 +1071,7 @@
             document.getElementById('profile-card').style.display = 'none';
             document.getElementById('wall-input-area').style.display = 'none';
             document.getElementById('inbox-area').style.display = 'none';
+            if(document.getElementById('pinned-media-area')) document.getElementById('pinned-media-area').style.display = 'none';
             document.getElementById('wall-posts').innerHTML = '';
         }
 
