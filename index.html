@@ -4,50 +4,40 @@
     <title>Соціальна мережа</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <style>
         :root {
-            /* WEB 2.0 CLASSIC THEME */
-            --bg-body: #E8EEFA;
-            --glass-bg: #FFFFFF;
-            --glass-bg-hover: #F2F6FA;
-            --glass-border: #8FA6C3;
+            /* Classic Mail.ru 2000s Colors */
+            --bg-body: #FFFFFF;
+            --panel-head: #DAE5F4;
+            --panel-bg: #F3F7FB;
+            --border-main: #88AADD;
+            --border-dark: #336699;
             --text-main: #000000;
             --text-sub: #666666;
             
-            --primary: #3B5998;
-            --primary-grad: linear-gradient(to bottom, #7BA9F7 0%, #4684E0 50%, #2B69CD 51%, #1952B3 100%);
+            --primary: #003399; /* Mail.ru Classic Blue */
+            --orange: #FF9900;  /* Mail.ru Classic Orange */
+            --link-color: #0033CC;
+            --link-hover: #FF0000;
             
-            --danger: #D00000;
-            --danger-bg: #FFEBEB;
-            --verified: #E5A91A;
-            --radius-sm: 3px;
-            --radius-md: 4px;
-            --shadow-main: 0px 2px 5px rgba(0,0,0,0.15);
-            
-            --link-color: #2B587A;
-            --panel-head: #D8E2F0;
+            --danger: #CC0000;
+            --verified: #FF9900;
         }
 
+        /* Скасовуємо темну тему для автентичності 2000-х */
         [data-theme="dark"] {
-            --bg-body: #1A1A1A;
-            --glass-bg: #2C2C2C;
-            --glass-bg-hover: #3A3A3A;
-            --glass-border: #555555;
-            --text-main: #E0E0E0;
-            --text-sub: #999999;
-            --primary-grad: linear-gradient(to bottom, #666 0%, #444 50%, #333 51%, #111 100%);
-            --link-color: #7BA9F7;
-            --panel-head: #222222;
+            --bg-body: #EAEAEA;
+            --panel-head: #CCCCCC;
+            --panel-bg: #DDDDDD;
+            --text-main: #000;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
+        
         body { 
             font-family: Tahoma, Verdana, Arial, sans-serif; 
             font-size: 11px; 
             background-color: var(--bg-body); 
-            background-image: linear-gradient(#D9E3F0 1px, transparent 1px), linear-gradient(90deg, #D9E3F0 1px, transparent 1px);
-            background-size: 20px 20px;
             color: var(--text-main); 
             height: 100vh; 
             display: flex; 
@@ -56,302 +46,248 @@
         }
 
         a { color: var(--link-color); text-decoration: underline; cursor: pointer; }
-        a:hover { text-decoration: none; color: #D00000; }
+        a:hover { text-decoration: none; color: var(--link-hover); }
 
         .ambient-bg { display: none; }
 
-        .glass-panel { 
-            background: var(--glass-bg); 
-            border: 1px solid var(--glass-border); 
-            border-radius: var(--radius-md); 
-            box-shadow: 1px 1px 0px rgba(255,255,255,0.8) inset;
+        /* Classic Table-like Boxes */
+        .glass-panel, .card { 
+            background: var(--panel-bg); 
+            border: 1px solid var(--border-main); 
+            border-radius: 0; 
+            margin-bottom: 8px;
         }
 
+        /* Classic Header */
         .header-logo { 
-            font-size: 22px; 
+            font-size: 24px; 
             font-weight: bold; 
-            text-align: left; 
-            padding: 10px 24px; 
-            background: linear-gradient(to bottom, #739CE6 0%, #3B5998 50%, #2A4580 51%, #1A2E5B 100%);
-            color: #FFFFFF;
-            border-bottom: 2px solid #101C3A; 
+            padding: 12px 20px; 
+            background: #FFFFFF;
+            color: var(--primary);
+            border-bottom: 3px solid var(--orange); 
             z-index: 10;
-            font-family: "Trebuchet MS", Arial, sans-serif;
-            text-shadow: 1px 1px 1px #000000;
-            box-shadow: 0 3px 5px rgba(0,0,0,0.3);
+            font-family: Arial, Helvetica, sans-serif;
             position: relative;
         }
         
+        .header-logo::before {
+            content: "@";
+            color: var(--orange);
+            margin-right: 2px;
+            font-size: 28px;
+            vertical-align: middle;
+        }
+
         .header-logo::after {
             content: "BETA";
             font-size: 9px;
-            background: #D00000;
-            padding: 2px 4px;
-            border-radius: 2px;
-            border: 1px solid #FFF;
-            vertical-align: top;
-            margin-left: 8px;
-            box-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+            background: transparent;
+            color: var(--danger);
+            padding: 0;
+            border: none;
+            vertical-align: super;
+            margin-left: 5px;
+            font-weight: normal;
         }
 
-        .tab-header { 
-            font-size: 14px; 
-            font-weight: bold; 
-            margin-bottom: 12px; 
-            color: var(--link-color); 
-            border-bottom: 2px solid var(--glass-border); 
-            padding-bottom: 4px; 
-            background: var(--panel-head);
-            padding: 6px 10px;
-            border-radius: 3px;
-        }
-        .text-sub { color: var(--text-sub); font-size: 10px; }
-        
-        .section-title { 
-            background: var(--panel-head);
-            color: var(--link-color); 
+        .tab-header, .section-title { 
             font-size: 11px; 
             font-weight: bold; 
-            display: block; 
-            border-bottom: 1px solid var(--glass-border); 
-            padding: 5px 8px;
-            margin: -12px -12px 10px -12px; 
-            border-radius: 3px 3px 0 0;
+            color: var(--text-main); 
+            background: var(--panel-head);
+            border-bottom: 1px solid var(--border-main); 
+            padding: 4px 8px;
+            display: block;
         }
         
-        .icon-verified { color: var(--verified); font-size: 14px; vertical-align: middle; display: inline-flex; align-items: center; justify-content: center; }
+        .tab-header {
+            margin-bottom: 8px;
+            border: 1px solid var(--border-main);
+        }
 
-        #auth-box { flex: 1; display: flex; justify-content: center; align-items: center; padding: 24px; z-index: 2; overflow-y: auto;}
+        .section-title { 
+            margin: 0 0 8px 0; 
+        }
+
+        .text-sub { color: var(--text-sub); font-size: 10px; }
+        .icon-verified { color: var(--verified); font-weight: bold; font-family: Arial;}
+
+        #auth-box { flex: 1; display: flex; justify-content: center; align-items: flex-start; padding-top: 50px; z-index: 2; overflow-y: auto; background: #E0EBF5;}
         
         #main-ui { 
-            display: none; flex: 1; width: 100%; max-width: 980px; margin: 10px auto; padding: 12px; gap: 12px; 
+            display: none; flex: 1; width: 100%; max-width: 1000px; margin: 0 auto; padding: 5px; 
             overflow: hidden; position: relative; 
             background: #FFFFFF;
-            border: 1px solid #A1A1A1;
-            box-shadow: var(--shadow-main);
         }
         
-        .column { display: flex; flex-direction: column; height: 100%; overflow-y: auto; overflow-x: hidden; scrollbar-width: auto; padding-right: 4px; }
+        .column { display: flex; flex-direction: column; height: 100%; overflow-y: auto; padding: 0 4px; scrollbar-width: thin; }
         
         #col-left { width: 180px; flex-shrink: 0; } 
         #col-main { flex: 1; min-width: 0; }
-        #col-right { width: 220px; flex-shrink: 0; }
+        #col-right { width: 200px; flex-shrink: 0; }
 
-        .card { padding: 12px; margin-bottom: 12px; }
+        .card { padding: 8px; }
         .card-auth { 
-            width: 100%; max-width: 350px; text-align: left; padding: 20px; 
-            background: #F4F8FC; border: 1px solid #8FA6C3; 
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            width: 100%; max-width: 320px; text-align: left; padding: 15px; 
+            background: #FFFFFF; border: 1px solid var(--border-dark); 
         }
 
+        /* Classic OS Inputs */
         input, textarea, select { 
-            width: 100%; background: #FFFFFF; border: 2px inset #D0D0D0; color: var(--text-main); 
-            border-radius: 0; padding: 4px 6px; font-size: 11px; font-family: Tahoma, sans-serif; 
-            margin-bottom: 10px; outline: none;
+            width: 100%; background: #FFFFFF; border: 1px solid #7F9DB9; color: #000; 
+            border-radius: 0; padding: 3px 4px; font-size: 11px; font-family: Tahoma, sans-serif; 
+            margin-bottom: 8px; outline: none;
         }
-        [data-theme="dark"] input, [data-theme="dark"] textarea, [data-theme="dark"] select { border: 2px inset #666; background: #222; }
-        input:focus, textarea:focus, select:focus { border-color: #8FA6C3; background: #FFFFF0; } 
-        .form-label { display: block; text-align: left; font-size: 11px; font-weight: bold; color: #444; margin-bottom: 4px; }
+        input:focus, textarea:focus, select:focus { border-color: var(--primary); } 
+        .form-label { display: block; text-align: left; font-size: 11px; color: #000; margin-bottom: 2px; }
 
+        /* Classic Buttons */
         button { 
-            font-family: Tahoma, sans-serif; font-size: 11px; font-weight: bold; border-radius: 4px; 
-            cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px; 
-            padding: 4px 12px; width: 100%; box-sizing: border-box; text-decoration: none;
-            box-shadow: inset 0 1px 0 rgba(255,255,255,0.6), 0 1px 2px rgba(0,0,0,0.2);
-            transition: none; 
+            font-family: Tahoma, sans-serif; font-size: 11px; border-radius: 0; 
+            cursor: pointer; padding: 3px 10px; text-decoration: none;
+            border: 1px solid #707070; background: #E4E4E4; color: #000;
         }
-        button:active { 
-            box-shadow: inset 0 1px 3px rgba(0,0,0,0.4); 
-            padding: 5px 12px 3px 12px; 
-        }
+        button:active { background: #CCCCCC; }
         
         .btn-primary { 
-            background: var(--primary-grad); color: #FFF; border: 1px solid #133D8A;
-            text-shadow: 0 -1px 0 rgba(0,0,0,0.5);
+            background: var(--orange); color: #FFF; border: 1px solid #CC6600; font-weight: bold;
         }
-        .btn-primary:hover { background: linear-gradient(to bottom, #8BB4F8 0%, #5C92E4 50%, #3B75D4 51%, #2660BF 100%); }
+        .btn-primary:hover { background: #FF8800; }
         
         .btn-secondary { 
-            background: linear-gradient(to bottom, #F7F7F7 0%, #E0E0E0 50%, #CCCCCC 51%, #BDBDBD 100%); 
-            color: #333; border: 1px solid #888; text-shadow: 0 1px 0 #FFF;
+            background: #F0F0F0; border: 1px solid #999; color: #000;
         }
-        .btn-secondary:hover { background: linear-gradient(to bottom, #FFFFFF 0%, #EAEAEA 50%, #D4D4D4 51%, #C4C4C4 100%); }
+        .btn-secondary:hover { background: #E0E0E0; }
         
-        .btn-text { background: transparent; color: var(--link-color); border: none; text-decoration: underline; font-weight: normal; box-shadow: none; padding: 0;}
-        .btn-text:hover { text-decoration: none; color: var(--danger); background: transparent; }
-        .btn-text:active { padding:0; box-shadow:none;}
+        .btn-text { background: transparent; color: var(--link-color); border: none; text-decoration: underline; padding: 0;}
+        .btn-text:hover { text-decoration: none; color: var(--link-hover); background: transparent; }
         
-        .btn-danger { background: linear-gradient(to bottom, #F77 0%, #D00 50%, #A00 51%, #800 100%); color: #FFF; border: 1px solid #600; text-shadow: 0 -1px 0 #000; }
-        .btn-danger:hover { background: linear-gradient(to bottom, #F99 0%, #E22 50%, #C00 51%, #A00 100%); }
+        .btn-danger { background: #CC0000; color: #FFF; border: 1px solid #990000; }
         
-        .btn-dashed { background: #F9F9F9; border: 1px dashed #A1A1A1; color: var(--text-sub); font-weight: normal; box-shadow: none; }
-        .btn-dashed:hover { background: #E0E0E0; color: var(--text-main); border: 1px solid #888; }
+        .btn-dashed { background: transparent; border: 1px dashed var(--border-main); color: var(--link-color); }
+        .btn-dashed:hover { background: #FFF; }
         
-        .btn-nav { justify-content: flex-start; background: #F0F4F9; color: var(--link-color); margin-bottom: 4px; padding: 6px 8px; border: 1px solid #D8E2F0; font-weight: bold; border-left: 3px solid #8FA6C3; box-shadow: none; border-radius:0;}
-        .btn-nav:hover { background: #D8E2F0; border-color: #8FA6C3; text-decoration: none; border-left: 3px solid var(--primary); }
-        .btn-nav:active { padding: 6px 8px; }
+        /* Sidebar Navigation */
+        .btn-nav { 
+            display: block; width: 100%; text-align: left; background: transparent; color: var(--link-color); 
+            margin-bottom: 2px; padding: 4px 6px; border: none; border-bottom: 1px solid #EAEAEA;
+            text-decoration: underline; font-weight: normal; 
+        }
+        .btn-nav:hover { background: var(--panel-head); text-decoration: none; color: var(--link-hover); border-bottom: 1px solid var(--border-main); }
 
-        .avatar-lg { width: 120px; height: 120px; border-radius: 0; object-fit: cover; border: 1px solid #AAA; padding: 4px; background: #FFF; box-shadow: 1px 1px 3px rgba(0,0,0,0.2); }
-        .avatar-md { width: 50px; height: 50px; border-radius: 0; object-fit: cover; border: 1px solid #AAA; padding: 2px; background: #FFF; }
-        .avatar-sm { width: 32px; height: 32px; border-radius: 0; object-fit: cover; border: 1px solid #AAA; padding: 2px; background: #FFF; }
+        /* Avatars with classic borders */
+        .avatar-lg { width: 100px; height: 100px; object-fit: cover; border: 1px solid #000; }
+        .avatar-md { width: 50px; height: 50px; object-fit: cover; border: 1px solid #000; }
+        .avatar-sm { width: 32px; height: 32px; object-fit: cover; border: 1px solid #000; }
         
-        .list-item { display: flex; align-items: center; gap: 8px; padding: 6px; cursor: pointer; border-bottom: 1px solid #E0E5EE; }
-        .list-item:hover { background: #EDF1F7; }
-        .list-item b { font-weight: bold; font-size: 11px; color: var(--link-color); }
+        .list-item { display: flex; align-items: center; gap: 6px; padding: 4px; cursor: pointer; border-bottom: 1px dotted var(--border-main); }
+        .list-item:hover { background: #FFFFCC; }
+        .list-item b { font-weight: normal; font-size: 11px; color: var(--link-color); text-decoration: underline; }
+        .list-item:hover b { color: var(--link-hover); text-decoration: none; }
         
-        .post { margin-bottom: 16px; border: 1px solid var(--glass-border); background: #FFFFFF; }
-        .post-header { display: flex; justify-content: space-between; align-items: center; padding: 6px 10px; border-bottom: 1px solid #D8E2F0; background: var(--panel-head); font-size: 10px; }
-        .post-body { padding: 12px; font-size: 12px; line-height: 1.5; word-wrap: break-word; color: #000; overflow-wrap: anywhere;}
-        .post-footer { padding: 6px 10px; background: #F4F8FC; display: flex; align-items: center; gap: 8px; border-top: 1px solid #D8E2F0; }
-        .img-fluid { width: 100%; max-height: 420px; object-fit: cover; border: 1px solid #999; margin-top: 8px; padding: 4px; background:#FFF; box-shadow: 2px 2px 5px rgba(0,0,0,0.1); }
+        /* Posts - Table style */
+        .post { margin-bottom: 12px; border: 1px solid var(--border-main); background: #FFFFFF; }
+        .post-header { display: flex; justify-content: space-between; align-items: center; padding: 4px 6px; background: var(--panel-head); font-size: 11px; border-bottom: 1px solid var(--border-main); }
+        .post-body { padding: 8px; font-size: 12px; line-height: 1.4; color: #000; overflow-wrap: anywhere;}
+        .post-footer { padding: 4px 6px; background: var(--panel-bg); display: flex; align-items: center; gap: 8px; border-top: 1px solid var(--border-main); }
+        .img-fluid { width: 100%; max-height: 420px; object-fit: contain; border: 1px solid #000; margin-top: 5px; }
         
-        .btn-like { width: auto; padding: 3px 8px; font-weight: bold; font-size: 10px; transition: all 0.2s ease;}
-        .btn-like.active { background: #D8E2F0; border-color: #8FA6C3; color: #D00000; box-shadow: inset 0 1px 3px rgba(0,0,0,0.2); }
-        .btn-delete { width: auto; padding: 0; font-size: 10px; font-weight: normal; }
+        .btn-like { background: #FFF; border: 1px solid var(--border-main); color: #000; padding: 2px 6px; }
+        .btn-like.active { background: #FFEBEB; border-color: #CC0000; color: #CC0000; font-weight: bold; }
+        .btn-delete { color: var(--danger); font-size: 10px; text-decoration: none;}
 
-        #chat-window { display: none; flex-direction: column; height: 100%; border: 1px solid var(--glass-border); background: #FFF; }
-        #chat-header { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; border-bottom: 2px solid var(--primary); background: var(--panel-head); font-weight: bold; color: var(--primary); font-size: 12px; }
-        #messages-list { flex: 1; padding: 12px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; background: #FFFFFF; }
-        .chat-input-area { display: flex; gap: 8px; padding: 10px; border-top: 1px solid var(--glass-border); background: #F0F4F9; align-items: flex-start;}
+        /* Chat */
+        #chat-window { display: none; flex-direction: column; height: 100%; border: 1px solid var(--border-dark); background: #FFF; }
+        #chat-header { display: flex; justify-content: space-between; align-items: center; padding: 6px; background: var(--primary); color: #FFF; font-weight: bold; font-size: 12px; }
+        #chat-header .btn-text { color: #FFF; text-decoration: underline; }
+        #messages-list { flex: 1; padding: 8px; overflow-y: auto; display: flex; flex-direction: column; background: #FFFFFF; }
+        .chat-input-area { display: flex; gap: 4px; padding: 6px; border-top: 1px solid var(--border-dark); background: #E0EBF5; }
         
-        .msg-row { display: flex; align-items: flex-start; gap: 10px; width: 100%; border-bottom: 1px dashed #CCC; padding-bottom: 8px; }
-        .msg-row.me { flex-direction: row; background: #FFFBE6; border: 1px solid #F5E8A3; padding: 8px; border-radius: 3px;}
+        .msg-row { display: flex; align-items: flex-start; gap: 6px; border-bottom: 1px dotted #CCC; padding: 4px 0; }
+        .msg-row.me { background: #FFFFE0; }
         .msg-bubble { flex: 1; }
-        .msg-meta { font-size: 10px; margin-bottom: 6px; color: #666; border-bottom: 1px solid #EEE; padding-bottom: 4px;}
-        .msg-meta b { color: var(--link-color); font-size: 11px;}
+        .msg-meta { font-size: 10px; margin-bottom: 2px; color: var(--text-sub); }
+        .msg-meta b { color: var(--primary); font-size: 11px;}
         
         .mobile-nav { display: none; }
         .desktop-only { display: block; } .mobile-only { display: none; }
 
-        .flex-row { display: flex; gap: 8px; align-items: center; }
+        .flex-row { display: flex; gap: 4px; align-items: center; }
         .mt-15 { margin-top: 10px; }
         .mt-20 { margin-top: 15px; }
-        .scroll-area { overflow-y: auto; scrollbar-color: #8FA6C3 #F0F4F9; scrollbar-width: thin; }
+        .scroll-area { overflow-y: auto; scrollbar-width: thin; }
 
         .ad-banner {
-            position: relative; border: 1px solid var(--glass-border); margin-bottom: 12px; 
-            cursor: pointer; background: #FFF; padding: 4px; box-shadow: 1px 1px 3px rgba(0,0,0,0.1);
+            border: 1px solid #000; margin-bottom: 8px; cursor: pointer; background: #FFF; text-align: center;
         }
-        .ad-banner img { width: 100%; height: auto; display: block; border: 1px solid #CCC; }
+        .ad-banner img { width: 100%; height: auto; display: block; }
         .ad-badge {
-            display: block; background: #EAEAEA; color: #555; font-size: 9px; 
-            padding: 2px 4px; text-align: center; border-bottom: 1px solid #CCC; font-weight: bold;
+            display: block; background: var(--orange); color: #FFF; font-size: 9px; padding: 1px; 
+            text-align: center; font-weight: bold; text-transform: uppercase;
         }
 
-        #notification-container { position: fixed; bottom: 10px; right: 10px; z-index: 10000; width: 250px; }
+        #notification-container { position: fixed; bottom: 5px; right: 5px; z-index: 10000; width: 220px; }
         .toast { 
-            background: linear-gradient(to bottom, #FFFFF0, #FDF5CE); 
-            border: 1px solid #E6DB55; color: #333; padding: 10px; margin-top: 6px; 
-            font-size: 11px; cursor: pointer; box-shadow: 2px 2px 5px rgba(0,0,0,0.3); 
-            border-radius: 2px;
+            background: #FFFFCC; border: 1px solid #FFCC00; color: #000; padding: 6px; margin-top: 4px; 
+            font-size: 11px; cursor: pointer;
         }
 
+        /* Responsive - making it rigid but usable */
         @media (max-width: 850px) {
-            #main-ui { 
-                padding: 4px; gap: 4px; flex-direction: column; overflow-y: auto; 
-                display: block; margin: 0; border: none; box-shadow: none; border-radius: 0; 
-                background: transparent;
-            }
-            .column { display: none; width: 100% !important; height: auto; overflow: visible;}
-            .column.active-mob { display: flex; padding-bottom: 65px; } 
+            #main-ui { flex-direction: column; display: block; overflow-y: auto; padding: 0;}
+            .column { display: none; width: 100% !important; height: auto; overflow: visible; padding: 4px;}
+            .column.active-mob { display: flex; padding-bottom: 30px; } 
             .mobile-only { display: block !important; }
             .desktop-only { display: none !important; }
             
             .mobile-nav { 
-                display: flex; position: fixed; bottom: 0; left: 0; right: 0; height: 55px; 
-                background: linear-gradient(to bottom, #F7F7F7, #D4D4D4); border-top: 1px solid #999; 
+                display: flex; position: fixed; bottom: 0; left: 0; right: 0; height: 30px; 
+                background: #E4E4E4; border-top: 1px solid #999; 
                 justify-content: space-between; align-items: center; z-index: 999; 
-                box-shadow: 0 -2px 5px rgba(0,0,0,0.15);
             }
             .mobile-nav button { 
-                flex: 1; height: 100%; border: none; background: transparent; color: #333; 
-                border-right: 1px solid #CCC; font-weight: bold; box-shadow: none; 
-                text-shadow: 1px 1px 0 #FFF; font-size: 11px; padding: 0 4px;
+                flex: 1; height: 100%; border: none; border-right: 1px solid #999;
+                background: transparent; color: #000; font-size: 10px; padding: 0;
             }
             .mobile-nav button:last-child { border-right: none; }
             
-            input, textarea, select { padding: 8px; font-size: 13px; margin-bottom: 8px; } 
-            button { padding: 8px 12px; font-size: 12px; }
-            .btn-nav { padding: 10px 8px; } 
-            .btn-like { padding: 6px 10px; flex: 1; text-align: center; justify-content: center;} 
-            
-            #auth-box { padding: 10px; }
-            .card-auth { width: 100%; max-width: 100%; padding: 15px; margin-top: 10px; }
-
             #profile-card { flex-direction: column !important; align-items: center !important; text-align: center; }
-            #profile-card > img { margin-bottom: 10px; }
-            #profile-card > div { width: 100%; display: flex; flex-direction: column; align-items: center; }
-            #profile-card .flex-row { justify-content: center; flex-wrap: wrap; width: 100%; }
-            #profile-card .flex-row > button { flex: 1 1 auto; min-width: 45%; margin-top: 4px; }
-            
-            .flex-row { flex-wrap: wrap; justify-content: space-between; gap: 4px; }
-            .flex-row > button { flex: 1 1 calc(50% - 4px); min-width: 120px; text-align: center; justify-content: center; margin: 0; }
-            .flex-row > input { flex: 1 1 100%; margin-bottom: 4px; }
-
-            .post-footer { flex-wrap: wrap; justify-content: space-between; gap: 4px; }
-            .post-footer > button { flex: 1 1 calc(50% - 4px); margin: 0; }
-            .img-fluid { max-height: 250px; } 
-
-            #chat-header { padding: 10px 8px; font-size: 13px; }
-            #chat-header button { padding: 6px 8px; font-size: 11px; }
-            #chat-title { max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-            .chat-input-area { padding: 8px 6px; gap: 6px; align-items: center; }
-            .chat-input-area button { padding: 8px 10px; font-size: 11px; }
-            .chat-input-area input { margin: 0; padding: 8px; font-size: 13px; }
-            
-            .ad-banner { margin: 6px 0; }
-            #admin-target-id { margin-bottom: 8px; }
-        }
-
-        @media (max-width: 380px) {
-            .mobile-nav button { font-size: 9px; line-height: 1.2; word-wrap: break-word; }
-            .flex-row > button { flex: 1 1 100%; min-width: 100%; margin-top: 4px;} 
-            .post-footer { flex-direction: column; }
-            .post-footer > button { width: 100%; margin: 2px 0; }
-            .avatar-lg { width: 90px; height: 90px; } 
-            #chat-title { max-width: 90px; }
-            
-            .msg-row { flex-direction: column; gap: 4px; }
-            .msg-row.me { align-items: flex-end; }
-            .msg-bubble { width: 100%; }
+            .flex-row { flex-wrap: wrap; }
         }
 
         /* Стилі для каналів */
-        .channel-banner {
-            width: 100%; height: 150px; object-fit: cover; border-bottom: 2px solid var(--glass-border); border-radius: var(--radius-md) var(--radius-md) 0 0;
-        }
-        .channel-header-info { position: relative; padding: 10px 15px 15px 120px; background: #FFF; border-bottom: 1px solid var(--glass-border); }
-        .channel-avatar { position: absolute; top: -40px; left: 15px; width: 90px; height: 90px; border: 3px solid #FFF; border-radius: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.3); object-fit: cover; background: #FFF; }
-        .channel-badge { background: var(--primary); color: #FFF; font-size: 9px; padding: 2px 5px; border-radius: 3px; vertical-align: middle; }
+        .channel-banner { width: 100%; height: 100px; object-fit: cover; border-bottom: 1px solid #000; }
+        .channel-header-info { padding: 5px 5px 5px 70px; background: #FFF; position: relative; border-bottom: 1px solid var(--border-main);}
+        .channel-avatar { position: absolute; top: -30px; left: 5px; width: 60px; height: 60px; border: 1px solid #000; object-fit: cover; background: #FFF; }
+        .channel-badge { background: var(--orange); color: #FFF; font-size: 9px; padding: 1px 3px; vertical-align: super; }
     </style>
 </head>
 <body>
-
-    <div class="ambient-bg"></div>
 
     <div id="notification-container"></div>
     <div class="header-logo" id="global-logo">Завантаження...</div>
 
     <div id="auth-box">
-        <div class="glass-panel card-auth">
-            <h2 style="margin-bottom: 16px; font-size: 16px; color: var(--primary); border-bottom: 2px solid var(--glass-border); padding-bottom: 5px; text-shadow: 1px 1px 0 #FFF;">Вхід у систему</h2>
+        <div class="card-auth">
+            <div class="section-title" style="margin: -15px -15px 10px -15px; padding: 8px;">Авторизація</div>
             
-            <label class="form-label">Email</label>
-            <input type="email" id="my-email-input" placeholder="post@example.com">
+            <label class="form-label">E-mail адрес:</label>
+            <input type="email" id="my-email-input" placeholder="name@domain.com">
             
-            <label class="form-label">Пароль</label>
-            <input type="password" id="my-pass-input" placeholder="Пароль">
+            <label class="form-label">Пароль:</label>
+            <input type="password" id="my-pass-input">
             
-            <label class="form-label">Нікнейм (тільки для реєстрації)</label>
-            <input type="text" id="my-nick-input" placeholder="Нікнейм">
+            <label class="form-label">Нікнейм (для реєстрації):</label>
+            <input type="text" id="my-nick-input">
             
-            <label class="form-label">URL аватара (необов'язково)</label>
-            <input type="text" id="my-avatar-input" placeholder="http://...">
+            <label class="form-label">Фото (URL):</label>
+            <input type="text" id="my-avatar-input" value="http://">
             
-            <div class="flex-row mt-15" style="flex-direction: column; gap: 8px;">
-                <button class="btn-primary" onclick="handleAuth('login')">Увійти в акаунт</button>
-                <div style="margin: 4px 0; text-align: center; color: #888; font-size: 10px; font-weight: bold;">-- АБО --</div>
-                <button class="btn-secondary" onclick="handleAuth('reg')">Створити акаунт</button>
+            <div style="margin-top: 15px; text-align: center;">
+                <button class="btn-primary" style="width: 100%; margin-bottom: 5px; padding: 5px;" onclick="handleAuth('login')">Увійти</button>
+                <div style="font-size: 10px; color: #666; margin: 5px 0;">-- АБО --</div>
+                <button class="btn-secondary" style="width: 100%; padding: 5px;" onclick="handleAuth('reg')">Реєстрація</button>
             </div>
         </div>
     </div>
@@ -359,124 +295,143 @@
     <div id="main-ui">
         
         <div class="column" id="col-left">
-            <div class="glass-panel card" style="text-align: center; padding: 12px; background: #F0F4F9;">
+            <div class="card" style="text-align: center; background: #FFF;">
                 <img id="my-avatar-img" src="" class="avatar-lg" alt="Avatar">
-                <div id="display-nick" style="font-weight:bold; font-size: 12px; margin-top:8px; color: var(--primary);"></div>
+                <div id="display-nick" style="font-weight:bold; color: var(--primary); margin-top: 5px;"></div>
             </div>
             
-            <div class="glass-panel card" style="padding: 6px;">
-                <button class="btn-nav" onclick="loadFeed()">Головна</button>
-                <button class="btn-nav" onclick="loadSubscriptionsTab()">Мої підписки</button>
-                <button class="btn-nav" onclick="showVideos()">Відеозаписи</button>
-                <button class="btn-nav" onclick="showChannelsList()">Канали</button>
-                <button class="btn-nav" onclick="showMailClient()">Пошта</button> 
-                <button class="btn-nav" onclick="loadFavoritesTab()">Обрані</button>
-                <button class="btn-nav" onclick="showSearchEngine()">Пошуковик сайтів</button>
-                <button class="btn-nav" id="admin-nav-btn" style="display: none; color: var(--danger); border-left-color: var(--danger);" onclick="showAdminPanel()">Адмінка</button>
-                <button class="btn-nav" onclick="showSettings()">Налаштування</button>
-                <button class="btn-nav" onclick="showAbout()">Про нас</button>
+            <div class="card" style="padding: 0; background: transparent; border: none;">
+                <div class="section-title" style="margin-bottom: 0;">Мій Профіль</div>
+                <div style="background: #FFF; border: 1px solid var(--border-main); padding: 4px; margin-bottom: 8px;">
+                    <button class="btn-nav" onclick="loadFeed()">Головна сторінка</button>
+                    <button class="btn-nav" onclick="switchTab('col-main'); showWall();">Моя сторінка</button>
+                    <button class="btn-nav" onclick="loadSubscriptionsTab()">Мої підписки</button>
+                    <button class="btn-nav" onclick="showMailClient()">Пошта (@)</button> 
+                    <button class="btn-nav" onclick="loadFavoritesTab()">Обрані контакти</button>
+                </div>
+
+                <div class="section-title" style="margin-bottom: 0;">Сервіси</div>
+                <div style="background: #FFF; border: 1px solid var(--border-main); padding: 4px; margin-bottom: 8px;">
+                    <button class="btn-nav" onclick="showChannelsList()">Канали</button>
+                    <button class="btn-nav" onclick="showVideos()">Відеозаписи</button>
+                    <button class="btn-nav" onclick="showSearchEngine()">Пошук</button>
+                </div>
+
+                <div class="section-title" style="margin-bottom: 0;">Налаштування</div>
+                <div style="background: #FFF; border: 1px solid var(--border-main); padding: 4px;">
+                    <button class="btn-nav" id="admin-nav-btn" style="display: none; color: var(--danger);" onclick="showAdminPanel()">Адміністрування</button>
+                    <button class="btn-nav" onclick="showSettings()">Особисті дані</button>
+                    <button class="btn-nav" onclick="showAbout()">Про проект</button>
+                </div>
             </div>
 
-            <div class="desktop-only glass-panel card">
-                <span class="section-title">Паблік Чати</span>
-                <div class="scroll-area public-chats-list-class" style="max-height: 140px; margin-bottom: 8px;"></div>
-                <button class="btn-dashed" onclick="createPublicChat()">+ Додати чат</button>
+            <div class="desktop-only card" style="padding: 0;">
+                <div class="section-title" style="margin-bottom: 0;">Чати</div>
+                <div style="background: #FFF; border: 1px solid var(--border-main); padding: 2px;">
+                    <div class="scroll-area public-chats-list-class" style="max-height: 100px;"></div>
+                    <button class="btn-nav" style="color: #666; font-size: 10px;" onclick="createPublicChat()">[+] Додати чат</button>
+                </div>
 
-                <span class="section-title mt-20">Групи</span>
-                <div class="scroll-area groups-list-class" style="max-height: 140px; margin-bottom: 8px;"></div>
-                <button class="btn-dashed" onclick="createGroup()">+ Створити групу</button>
+                <div class="section-title" style="margin: 8px 0 0 0;">Групи</div>
+                <div style="background: #FFF; border: 1px solid var(--border-main); padding: 2px;">
+                    <div class="scroll-area groups-list-class" style="max-height: 100px;"></div>
+                    <button class="btn-nav" style="color: #666; font-size: 10px;" onclick="createGroup()">[+] Створити групу</button>
+                </div>
             </div>
         </div>
 
         <div class="column active-mob" id="col-main">
             
             <div id="profile-screen" style="display:flex; flex-direction:column; height:100%;">
-                <div class="glass-panel card" id="profile-card" style="display:flex; align-items:flex-start; gap:16px; background: #FFF;">
+                
+                <div class="card" id="profile-card" style="display:flex; align-items:flex-start; gap:10px; background: #FFF;">
                     <img id="view-avatar" class="avatar-lg" alt="User">
                     <div style="flex:1;">
-                        <div style="font-size:16px; font-weight:bold; color: var(--primary); display: flex; align-items: center; gap: 4px; border-bottom: 1px solid #EEE; padding-bottom: 4px; margin-bottom: 4px; justify-content: center;">
+                        <div style="font-size:16px; font-weight:bold; color: var(--primary); border-bottom: 1px solid var(--border-main); padding-bottom: 2px; margin-bottom: 4px;">
                             <span id="view-nick"></span> <span id="view-badges"></span>
                         </div>
-                        <span id="view-id-label" class="text-sub" style="word-break: break-all;"></span>
-                        <div style="font-size:11px; margin-top:8px; display: flex; justify-content: center; gap: 12px; color: #555; background: #F9F9F9; padding: 6px; border: 1px solid #E0E0E0;">
-                            <span>Підписники: <b id="count-followers" style="color:var(--primary)">0</b></span> 
-                            <span>Підписки: <b id="count-following" style="color:var(--primary)">0</b></span>
+                        <span id="view-id-label" class="text-sub"></span>
+                        <div style="font-size:11px; margin-top:5px; color: #000;">
+                            Читачі: <b id="count-followers">0</b> | Читає: <b id="count-following">0</b>
                         </div>
-                        <div class="flex-row mt-15" style="gap: 6px;">
-                            <button class="btn-primary" id="write-btn" style="display:none; width:auto;">Написати</button>
-                            <button class="btn-secondary" id="follow-btn" style="display:none; width:auto;">Підписатися</button>
-                            <button class="btn-dashed" id="fav-btn" style="display:none; width:auto;">В обране</button>
+                        <div class="flex-row mt-15">
+                            <button class="btn-primary" id="write-btn" style="display:none;">Написати</button>
+                            <button class="btn-secondary" id="follow-btn" style="display:none;">Підписатися</button>
+                            <button class="btn-secondary" id="fav-btn" style="display:none;">В обране</button>
                         </div>
                     </div>
                 </div>
 
-                <div id="inbox-area" class="glass-panel card" style="display:none;">
-                    <span class="section-title">Останні повідомлення</span>
-                    <div id="inbox-list" class="mt-15"></div>
+                <div id="inbox-area" class="card" style="display:none; padding: 0;">
+                    <div class="section-title" style="margin:0;">Нові повідомлення</div>
+                    <div id="inbox-list" style="background:#FFF; border:1px solid var(--border-main); padding:2px;"></div>
                 </div>
 
-                <div class="mobile-only" style="margin-bottom: 12px; display: flex; flex-direction: column; gap: 6px;">
-                    <button class="btn-secondary" id="admin-mob-btn" style="display: none; color: var(--danger);" onclick="showAdminPanel()">Панель адміністратора</button>
-                    <button class="btn-secondary" onclick="showSettings()">Налаштування</button>
+                <div class="mobile-only" style="margin-bottom: 8px;">
+                    <button class="btn-secondary" id="admin-mob-btn" style="display: none; color: var(--danger); width:100%; margin-bottom:4px;" onclick="showAdminPanel()">Адмінка</button>
+                    <button class="btn-secondary" style="width:100%;" onclick="showSettings()">Налаштування</button>
                 </div>
 
-                <div id="wall-input-area" class="glass-panel card" style="background: #F0F4F9;">
-                    <span style="font-weight: bold; margin-bottom: 6px; display: block; color: var(--primary);">Що у вас нового?</span>
-                    <textarea id="post-text" rows="3" style="margin-bottom: 8px; resize: vertical;" placeholder="Напишіть текст..."></textarea>
-                    <input type="text" id="post-img-url" placeholder="URL картинки (необов'язково)" style="margin-bottom: 8px;">
-                    <div style="display: flex; justify-content: flex-end;">
-                        <button class="btn-primary" onclick="createPost()" style="width: auto; padding: 6px 16px;">Опублікувати</button>
+                <div id="wall-input-area" class="card" style="background: var(--panel-head); margin-top: 8px;">
+                    <b style="color: var(--primary); display:block; margin-bottom: 4px;">Залишити запис:</b>
+                    <textarea id="post-text" rows="3" style="margin-bottom: 4px; border: 1px solid #707070;"></textarea>
+                    <input type="text" id="post-img-url" placeholder="http://... (URL картинки)" style="margin-bottom: 4px; border: 1px solid #707070;">
+                    <div style="text-align: right;">
+                        <button class="btn-primary" onclick="createPost()">Надіслати</button>
                     </div>
                 </div>
                 
-                <div id="wall-posts" class="scroll-area"></div>
+                <div id="wall-posts" class="scroll-area" style="margin-top: 8px;"></div>
             </div>
 
-            <div id="chat-window" class="glass-panel">
+            <div id="chat-window">
                 <div id="chat-header">
-                    <button class="btn-text" onclick="switchTab('col-left')" style="width: auto; font-weight: bold; color: var(--primary);">&laquo; Назад</button>
-                    <span id="chat-title" style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">ДІАЛОГ</span>
-                    <button class="btn-text" style="width:auto;" onclick="loadMessages()">Оновити</button>
+                    <button class="btn-text" onclick="switchTab('col-left')">&laquo; Назад</button>
+                    <span id="chat-title">ДІАЛОГ</span>
+                    <button class="btn-text" onclick="loadMessages()">Оновити</button>
                 </div>
                 <div id="messages-list"></div>
                 <div class="chat-input-area">
-                    <button class="btn-secondary" style="width:auto;" onclick="sendImagePrompt()">IMG</button>
-                    <input type="text" id="msg-input" placeholder="Напишіть повідомлення..." onkeyup="if(event.keyCode===13) sendMessage()" style="margin:0; flex:1;">
-                    <button class="btn-primary" style="width:auto;" onclick="sendMessage()">Надіслати</button>
+                    <button class="btn-secondary" onclick="sendImagePrompt()">IMG</button>
+                    <input type="text" id="msg-input" placeholder="Текст..." onkeyup="if(event.keyCode===13) sendMessage()" style="margin:0; flex:1;">
+                    <button class="btn-primary" onclick="sendMessage()">OK</button>
                 </div>
             </div>
         </div>
 
         <div class="column" id="col-right">
             
-            <div id="ad-container" style="display:none; margin-bottom: 12px;"></div>
+            <div id="ad-container" style="display:none; margin-bottom: 8px;"></div>
 
-            <div class="mobile-only glass-panel card" style="margin-bottom: 12px;">
-                <span class="section-title">Паблік Чати</span>
-                <div class="scroll-area public-chats-list-class" style="max-height: 140px; margin-bottom: 8px;"></div>
-                <button class="btn-dashed" style="margin-bottom: 12px; width: 100%;" onclick="createPublicChat()">+ Додати чат</button>
-
-                <span class="section-title">Групи</span>
-                <div class="scroll-area groups-list-class" style="max-height: 140px; margin-bottom: 8px;"></div>
-                <button class="btn-dashed" style="width: 100%;" onclick="createGroup()">+ Створити групу</button>
+            <div class="mobile-only card" style="padding: 0;">
+                <div class="section-title" style="margin: 0;">Чати</div>
+                <div style="background: #FFF; border: 1px solid var(--border-main); padding: 2px; margin-bottom: 8px;">
+                    <div class="scroll-area public-chats-list-class" style="max-height: 100px;"></div>
+                    <button class="btn-nav" style="color: #666; font-size: 10px;" onclick="createPublicChat()">[+] Додати</button>
+                </div>
+                <div class="section-title" style="margin: 0;">Групи</div>
+                <div style="background: #FFF; border: 1px solid var(--border-main); padding: 2px;">
+                    <div class="scroll-area groups-list-class" style="max-height: 100px;"></div>
+                    <button class="btn-nav" style="color: #666; font-size: 10px;" onclick="createGroup()">[+] Створити</button>
+                </div>
             </div>
 
-            <div class="glass-panel card">
-                <span class="section-title">Пошук за UUID</span>
-                <div class="flex-row">
-                    <input type="text" id="target-id-input" placeholder="Введіть UUID" style="margin:0;">
-                    <button class="btn-secondary" style="width:auto; min-width:60px;" onclick="goToId()">Знайти</button>
+            <div class="card" style="padding: 0;">
+                <div class="section-title" style="margin:0;">Знайти користувача</div>
+                <div style="background: #FFF; border: 1px solid var(--border-main); padding: 4px;">
+                    <input type="text" id="target-id-input" placeholder="UUID..." style="margin-bottom: 4px;">
+                    <button class="btn-secondary" style="width:100%;" onclick="goToId()">Шукати</button>
                 </div>
             </div>
             
-            <div class="glass-panel card">
-                <span class="section-title">Рекомендації</span>
-                <div id="users-list" class="scroll-area" style="max-height: 350px;"></div>
+            <div class="card mt-15" style="padding: 0;">
+                <div class="section-title" style="margin:0;">Люди</div>
+                <div id="users-list" class="scroll-area" style="background: #FFF; border: 1px solid var(--border-main); padding: 2px; max-height: 250px;"></div>
             </div>
 
-            <div class="glass-panel card mt-15">
-                <span class="section-title">Рекомендовані канали</span>
-                <div id="recommended-channels-list" class="scroll-area" style="max-height: 250px;"></div>
+            <div class="card mt-15" style="padding: 0;">
+                <div class="section-title" style="margin:0;">Канали</div>
+                <div id="recommended-channels-list" class="scroll-area" style="background: #FFF; border: 1px solid var(--border-main); padding: 2px; max-height: 250px;"></div>
             </div>
         </div>
     </div>
@@ -486,7 +441,7 @@
         <button onclick="switchTab('col-main'); showWall();">Профіль</button>
         <button onclick="switchTab('col-main'); showChannelsList();">Канали</button>
         <button onclick="switchTab('col-main'); showMailClient();">Пошта</button>
-        <button onclick="switchTab('col-right')">Пошук</button>
+        <button onclick="switchTab('col-right')">Інше</button>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -511,13 +466,11 @@
             const savedBg = localStorage.getItem('custom_bg');
             if (savedBg) { document.body.style.backgroundImage = `url('${savedBg}')`; document.body.style.backgroundSize = 'auto'; document.body.style.backgroundRepeat = 'repeat'; }
             
-            // Supabase Auth перевірка сесії
             const { data: { session } } = await _supabase.auth.getSession();
             if (session) {
                 await loadCurrentUserProfile(session.user.id);
             }
 
-            // Слухач змін автентифікації
             _supabase.auth.onAuthStateChange(async (event, session) => {
                 if (event === 'SIGNED_IN' && session) {
                     await loadCurrentUserProfile(session.user.id);
@@ -575,8 +528,8 @@
             document.getElementById('my-avatar-img').src = user.avatar_url || DEFAULT_AVATAR;
             
             if (myIsAdmin) {
-                document.getElementById('admin-nav-btn').style.display = 'inline-flex';
-                document.getElementById('admin-mob-btn').style.display = 'inline-flex';
+                document.getElementById('admin-nav-btn').style.display = 'block';
+                document.getElementById('admin-mob-btn').style.display = 'block';
             }
 
             loadBanners();
@@ -647,15 +600,15 @@
             }
             
             document.getElementById('view-badges').innerHTML = badges;
-            document.getElementById('view-id-label').innerText = "UUID: " + user.id;
+            document.getElementById('view-id-label').innerText = "ID: " + user.id;
             const isMe = (userId === myId);
             const hideAll = (!isMe && user.is_banned && !myIsAdmin);
 
             document.getElementById('wall-input-area').style.display = (isMe && !user.is_banned && !myRestrictPosts) ? 'block' : 'none';
             document.getElementById('inbox-area').style.display = isMe ? 'block' : 'none';
-            document.getElementById('write-btn').style.display = (isMe || hideAll) ? 'none' : 'inline-flex';
-            document.getElementById('follow-btn').style.display = (isMe || hideAll) ? 'none' : 'inline-flex';
-            document.getElementById('fav-btn').style.display = (isMe || hideAll) ? 'none' : 'inline-flex';
+            document.getElementById('write-btn').style.display = (isMe || hideAll) ? 'none' : 'inline-block';
+            document.getElementById('follow-btn').style.display = (isMe || hideAll) ? 'none' : 'inline-block';
+            document.getElementById('fav-btn').style.display = (isMe || hideAll) ? 'none' : 'inline-block';
             
             if(!isMe && !hideAll) { 
                 document.getElementById('write-btn').onclick = () => openPrivate(user.id, user.nickname); 
@@ -695,17 +648,17 @@
                     div.innerHTML = `
                         <div class="post-header">
                             <span class="text-sub">${new Date(p.created_at).toLocaleDateString()} ${new Date(p.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
-                            ${canDelete ? `<button class="btn-text btn-delete" style="color:var(--danger)" onclick="deletePost('${p.id}', '${userId}')">[x] Видалити</button>` : ''}
+                            ${canDelete ? `<a class="btn-delete" href="javascript:void(0)" onclick="deletePost('${p.id}', '${userId}')">[x] Видалити</a>` : ''}
                         </div>
                         <div class="post-body">${parseContent(p.text)}</div>
                         <div class="post-footer">
-                            <button onclick="toggleLike('${p.id}', this)" class="btn-like ${isLiked?'active':''}">&hearts; (<span class="like-count">${p.likes || 0}</span>)</button>
+                            <button onclick="toggleLike('${p.id}', '${userId}')" class="btn-like ${isLiked?'active':''}">&hearts; (${p.likes || 0})</button>
                             <button onclick="toggleComments('${p.id}')" class="btn-secondary" style="width:auto; flex:1;">Коментарі</button>
                         </div>
-                        <div id="comments-box-${p.id}" style="display:none; padding:12px; border-top:1px solid #EEE; background:#FFF;">
-                            <div id="comments-list-${p.id}" style="display:flex; flex-direction:column; gap:8px; margin-bottom:8px;"></div>
+                        <div id="comments-box-${p.id}" style="display:none; padding:8px; border-top:1px solid var(--border-main); background:#FFF;">
+                            <div id="comments-list-${p.id}" style="display:flex; flex-direction:column; gap:4px; margin-bottom:8px;"></div>
                             <div class="flex-row" style="margin:0;">
-                                <input type="text" id="comment-input-${p.id}" placeholder="Написати коментар..." style="margin:0;">
+                                <input type="text" id="comment-input-${p.id}" placeholder="Текст..." style="margin:0;">
                                 <button class="btn-primary" style="width:auto;" onclick="addComment('${p.id}', '${userId}')">Відпр.</button>
                             </div>
                         </div>
@@ -727,19 +680,19 @@
                     const div = document.createElement('div'); div.className = 'post';
                     div.innerHTML = `
                         <div class="post-header">
-                            <a onclick="viewProfile('${p.author_id}')">Автор: ${p.author_id.substring(0,8)}...</a>
+                            <a onclick="viewProfile('${p.author_id}')">Автор: ${p.author_id.substring(0,8)}</a>
                             <span class="text-sub">${new Date(p.created_at).toLocaleDateString()}</span> 
-                            ${canDelete ? `<button class="btn-text btn-delete" style="color:var(--danger)" onclick="deletePost('${p.id}', null)">[x] Видалити</button>` : ''}
+                            ${canDelete ? `<a class="btn-delete" href="javascript:void(0)" onclick="deletePost('${p.id}', null)">[x] Видалити</a>` : ''}
                         </div>
                         <div class="post-body">${parseContent(p.text)}</div>
                         <div class="post-footer">
-                            <button onclick="toggleLike('${p.id}', this)" class="btn-like ${isLiked?'active':''}">&hearts; (<span class="like-count">${p.likes || 0}</span>)</button>
+                            <button onclick="toggleLike('${p.id}', null, true)" class="btn-like ${isLiked?'active':''}">&hearts; (${p.likes || 0})</button>
                             <button onclick="toggleComments('${p.id}')" class="btn-secondary" style="width:auto; flex:1;">Коментарі</button>
                         </div>
-                        <div id="comments-box-${p.id}" style="display:none; padding:12px; border-top:1px solid #EEE; background:#FFF;">
-                            <div id="comments-list-${p.id}" style="display:flex; flex-direction:column; gap:8px; margin-bottom:8px;"></div>
+                        <div id="comments-box-${p.id}" style="display:none; padding:8px; border-top:1px solid var(--border-main); background:#FFF;">
+                            <div id="comments-list-${p.id}" style="display:flex; flex-direction:column; gap:4px; margin-bottom:8px;"></div>
                             <div class="flex-row" style="margin:0;">
-                                <input type="text" id="comment-input-${p.id}" placeholder="Написати коментар..." style="margin:0;">
+                                <input type="text" id="comment-input-${p.id}" placeholder="Текст..." style="margin:0;">
                                 <button class="btn-primary" style="width:auto;" onclick="addComment('${p.id}', null, true)">Відпр.</button>
                             </div>
                         </div>
@@ -760,7 +713,7 @@
             if(!listEl) return;
             const { data: comments } = await _supabase.from('comments').select('*').eq('post_id', postId).order('created_at', { ascending: true });
             
-            if(!comments || comments.length === 0) { listEl.innerHTML = '<span class="text-sub" style="font-size:11px;">Коментарів поки немає.</span>'; return; }
+            if(!comments || comments.length === 0) { listEl.innerHTML = '<span class="text-sub" style="font-size:11px;">Коментарів немає.</span>'; return; }
 
             const authorIds = [...new Set(comments.map(c => c.author_id))];
             const { data: users } = await _supabase.from('profiles').select('id, nickname, avatar_url, is_verified, is_admin').in('id', authorIds);
@@ -773,14 +726,14 @@
                 if (user.is_admin) b += ' [A]';
 
                 return `
-                    <div style="padding:6px; border-bottom:1px dashed #DDD; display:flex; gap:8px;">
+                    <div style="padding:4px; border-bottom:1px dotted var(--border-main); display:flex; gap:6px;">
                         <img src="${user.avatar_url || DEFAULT_AVATAR}" class="avatar-sm" style="cursor:pointer;" onclick="viewProfile('${c.author_id}')">
                         <div style="flex:1;">
                             <div style="font-size:11px; font-weight:bold; margin-bottom:2px;">
                                 <a onclick="viewProfile('${c.author_id}')">${user.nickname}</a> ${b}
                                 <span class="text-sub" style="font-weight:normal;">${new Date(c.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
                             </div>
-                            <div style="font-size:12px;">${parseContent(c.text)}</div>
+                            <div style="font-size:11px;">${parseContent(c.text)}</div>
                         </div>
                         ${canDeleteComment ? `<a style="color:var(--danger); font-size:10px; cursor:pointer;" onclick="deleteComment('${c.id}', '${postId}')">[x]</a>` : ''}
                     </div>
@@ -840,19 +793,19 @@
             if(banners && banners.length > 0) {
                 listEl.innerHTML = banners.map(b => `
                     <div class="list-item" style="border: 1px solid #CCC; margin-bottom:4px; padding:4px;">
-                        <img src="${b.image_url}" style="width:40px; height:20px; border:1px solid #999;">
-                        <div style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:11px;">
+                        <img src="${b.image_url}" style="width:40px; height:20px; border:1px solid #000;">
+                        <div style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:10px;">
                             <a href="${b.target_url}" target="_blank">${b.target_url}</a>
                         </div>
                         <button class="btn-danger" style="width:auto;" onclick="deleteBanner('${b.id}')">[x]</button>
                     </div>`).join('');
             } else {
-                listEl.innerHTML = '<span class="text-sub">Рекламних банерів поки немає.</span>';
+                listEl.innerHTML = '<span class="text-sub">Банерів немає.</span>';
             }
         }
 
         async function deleteBanner(id) {
-            if(!confirm("Точно видалити рекламний банер?")) return;
+            if(!confirm("Видалити банер?")) return;
             await _supabase.from('banners').delete().eq('id', id);
             renderAdminBanners(); loadBanners();
         }
@@ -860,7 +813,7 @@
         async function sendMessage() {
             const inp = document.getElementById('msg-input');
             if(!inp.value.trim() || !currentChatId) return;
-            if (currentChatId.startsWith("group_") && myRestrictGroups) { alert("Вам заборонено надсилати повідомлення в групи та спільні чати."); return; }
+            if (currentChatId.startsWith("group_") && myRestrictGroups) { alert("Вам заборонено надсилати повідомлення в групи."); return; }
             await _supabase.from('messages').insert([{ sender_id: myId, chat_id: currentChatId, text: inp.value.trim() }]);
             inp.value = ""; loadMessages();
         }
@@ -883,9 +836,9 @@
                     <div class="msg-bubble">
                         <div class="msg-meta">
                             <b>${user.nickname} ${b}</b>
-                            <span>${new Date(m.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                            <span style="color: #999;">${new Date(m.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
                         </div>
-                        <div style="word-break: break-word; font-size: 12px;">${parseContent(m.text)}</div>
+                        <div style="word-break: break-word; font-size: 11px;">${parseContent(m.text)}</div>
                     </div>
                 </div>`;
             }).join('');
@@ -897,7 +850,7 @@
             if (myRestrictChatFirst) {
                 const { data: existingMsgs } = await _supabase.from('messages').select('id').eq('chat_id', chatId).limit(1);
                 if (!existingMsgs || existingMsgs.length === 0) {
-                    alert("Адміністрація обмежила вам можливість писати користувачам першим."); return;
+                    alert("Вам заборонено писати першим."); return;
                 }
             }
             currentChatId = chatId;
@@ -908,24 +861,21 @@
         }
 
         function switchTab(id) { document.querySelectorAll('.column').forEach(c => c.classList.remove('active-mob')); document.getElementById(id).classList.add('active-mob'); }
-        function parseContent(str) { const p = /(https?:\/\/[^\s]+)/g; return str.replace(p, u => u.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? `<img src="${u}" class="img-fluid" onclick="window.open('${u}')">` : `<a href="${u}" target="_blank">${u}</a>`); }
+        function parseContent(str) { const p = /(https?:\/\/[^\s]+)/g; return str.replace(p, u => u.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? `<br><img src="${u}" class="img-fluid" onclick="window.open('${u}')"><br>` : `<a href="${u}" target="_blank">${u}</a>`); }
 
         function showSettings() {
             clearMainArea();
             const wall = document.getElementById('wall-posts');
             const currentBg = localStorage.getItem('custom_bg') || '';
             wall.innerHTML = `
-                <div class="tab-header">Налаштування</div>
+                <div class="tab-header">Особисті дані</div>
                 <div class="glass-panel card">
-                    <label class="form-label">Нікнейм</label><input type="text" id="set-nick" value="${myNick}">
-                    <label class="form-label">URL Аватара</label><input type="text" id="set-av">
-                    <label class="form-label">URL Кастомного фону (патерн)</label><input type="text" id="set-bg" value="${currentBg}">
+                    <label class="form-label">Нікнейм:</label><input type="text" id="set-nick" value="${myNick}">
+                    <label class="form-label">Аватар (URL):</label><input type="text" id="set-av">
                     <button class="btn-primary mt-15" style="width:100%;" onclick="updateProfile()">Зберегти зміни</button>
                 </div>
-                <div class="glass-panel card">
-                    <span class="section-title">Оформлення:</span>
-                    <div class="flex-row mt-15"><button class="btn-secondary" onclick="setTheme('light')">Світла</button><button class="btn-secondary" onclick="setTheme('dark')">Темна</button></div>
-                    <button class="btn-text mt-20" style="color:var(--danger); width: 100%; text-align: center;" onclick="logout()">[Вийти з акаунта]</button>
+                <div class="glass-panel card" style="text-align: center;">
+                    <button class="btn-secondary" style="color:var(--danger); width: 100%;" onclick="logout()">Вихід з системи</button>
                 </div>`;
         }
 
@@ -933,61 +883,44 @@
             if (!myIsAdmin) return;
             clearMainArea();
             const wall = document.getElementById('wall-posts');
-            const currentColor = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim();
 
             wall.innerHTML = `
-                <div class="tab-header" style="color:var(--danger)">Панель адміністратора</div>
+                <div class="tab-header" style="color:var(--danger)">Панель Адміністратора</div>
                 
-                <div class="glass-panel card" style="border-left: 3px solid #777">
-                    <span class="section-title">Керування рекламою (Банери)</span>
-                    <label class="form-label">URL картинки банера</label>
-                    <input type="text" id="admin-banner-img" placeholder="http://...">
-                    <label class="form-label">Посилання для переходу при кліку</label>
-                    <input type="text" id="admin-banner-link" placeholder="http://...">
+                <div class="glass-panel card">
+                    <span class="section-title">Реклама (Банери)</span>
+                    <label class="form-label">Картинка (URL)</label>
+                    <input type="text" id="admin-banner-img">
+                    <label class="form-label">Посилання (URL)</label>
+                    <input type="text" id="admin-banner-link">
                     <button class="btn-secondary mt-15" onclick="addBanner()">Додати банер</button>
                     
                     <span class="section-title mt-20">Активні банери</span>
-                    <div id="admin-banners-list" class="scroll-area" style="max-height: 200px;"></div>
+                    <div id="admin-banners-list" class="scroll-area" style="max-height: 150px; background: #FFF; border: 1px solid var(--border-main);"></div>
                 </div>
 
-                <div class="glass-panel card" style="border-left: 3px solid var(--primary)">
-                    <span class="section-title">Глобальні налаштування інтерфейсу</span>
-                    <label class="form-label">Назва соцмережі</label>
-                    <input type="text" id="admin-app-name" value="${globalAppInfo.name}">
-                    <label class="form-label">Про проєкт (Опис)</label>
-                    <textarea id="admin-app-desc" rows="3">${globalAppInfo.desc}</textarea>
-                    <label class="form-label">Основний акцентный колір</label>
-                    <input type="color" id="admin-app-color" style="height:30px; padding:0; width: 100%;" value="${currentColor.startsWith('#') ? currentColor : '#3B5998'}">
-                    <button class="btn-primary mt-15" onclick="saveGlobalSettings()">Застосувати для всіх</button>
-                </div>
-
-                <div class="glass-panel card" style="border-left: 3px solid var(--danger)">
-                    <span class="section-title">Модерація користувачів (За UUID)</span>
-                    <input type="text" id="admin-target-id" placeholder="UUID користувача...">
+                <div class="glass-panel card">
+                    <span class="section-title">Модерація (За UUID)</span>
+                    <input type="text" id="admin-target-id" placeholder="UUID...">
                     <div class="flex-row" style="flex-wrap: wrap; gap: 4px;">
-                        <button class="btn-secondary" onclick="moderateUser('verify', true)">Дати галочку</button>
-                        <button class="btn-secondary" onclick="moderateUser('verify', false)">Зняти галочку</button>
-                        <button class="btn-danger" onclick="moderateUser('ban', true)">Забанити</button>
-                        <button class="btn-secondary" onclick="moderateUser('ban', false)">Розбанити</button>
+                        <button class="btn-secondary" onclick="moderateUser('verify', true)">Дати VIP</button>
+                        <button class="btn-secondary" onclick="moderateUser('verify', false)">Забрати VIP</button>
+                        <button class="btn-danger" onclick="moderateUser('ban', true)">БАН</button>
+                        <button class="btn-secondary" onclick="moderateUser('ban', false)">Анбан</button>
                     </div>
 
-                    <span class="section-title mt-20">Часткові обмеження (Мути)</span>
+                    <span class="section-title mt-20">Мути</span>
                     <div class="flex-row" style="flex-wrap: wrap; gap: 4px;">
-                        <button class="btn-secondary" onclick="moderateRestriction('posts', true)" style="font-size:10px; color:var(--danger)">Бан постів</button>
-                        <button class="btn-secondary" onclick="moderateRestriction('groups', true)" style="font-size:10px; color:var(--danger)">Бан груп</button>
-                        <button class="btn-secondary" onclick="moderateRestriction('chat_first', true)" style="font-size:10px; color:var(--danger)">Не писати 1-м</button>
-                        <button class="btn-secondary" style="width:100%; margin-top:4px; font-size:11px;" onclick="moderateRestriction('clear_all', false)">Зняти всі обмеження (Мути)</button>
-                    </div>
-
-                    <div class="flex-row mt-20" style="gap:4px;">
-                        <button class="btn-secondary" onclick="setAdminStatus(true)">Зробити Адміном</button>
-                        <button class="btn-secondary" onclick="setAdminStatus(false)">Зняти Адмінку</button>
+                        <button class="btn-secondary" onclick="moderateRestriction('posts', true)" style="color:var(--danger)">Пости</button>
+                        <button class="btn-secondary" onclick="moderateRestriction('groups', true)" style="color:var(--danger)">Групи</button>
+                        <button class="btn-secondary" onclick="moderateRestriction('chat_first', true)" style="color:var(--danger)">ЛС 1-м</button>
+                        <button class="btn-secondary" style="width:100%; margin-top:4px;" onclick="moderateRestriction('clear_all', false)">Зняти всі мути</button>
                     </div>
                 </div>
 
                 <div class="glass-panel card">
-                    <span class="section-title">Список діючих адміністраторів</span>
-                    <div id="admins-list" class="scroll-area" style="max-height: 250px; margin-top:10px;">Завантаження...</div>
+                    <span class="section-title">Список Адмінів</span>
+                    <div id="admins-list" class="scroll-area" style="max-height: 150px; background: #FFF; border: 1px solid var(--border-main);"></div>
                 </div>
             `;
             renderAdminBanners();
@@ -995,33 +928,29 @@
         }
 
         async function saveGlobalSettings() {
-            const name = document.getElementById('admin-app-name').value.trim();
-            const desc = document.getElementById('admin-app-desc').value.trim();
-            const color = document.getElementById('admin-app-color').value;
-            await _supabase.from('global_settings').upsert({ id: 1, app_name: name, app_desc: desc, color_primary: color });
-            alert('Глобальні налаштування оновлено!'); fetchGlobalSettings();
+            // Залишив для сумісності з вашим JS, хоч дизайн фіксований
         }
 
         async function moderateUser(action, status) {
             const targetId = document.getElementById('admin-target-id').value.trim();
-            if(!targetId) { alert("Вкажіть UUID користувача!"); return; }
+            if(!targetId) { alert("Вкажіть UUID!"); return; }
             const { data } = await _supabase.from('profiles').select('*').eq('id', targetId).single();
-            if(!data) { alert("Користувача не знайдено!"); return; }
+            if(!data) { alert("Не знайдено!"); return; }
             if (action === 'verify') await _supabase.from('profiles').update({ is_verified: status }).eq('id', targetId);
             else if (action === 'ban') await _supabase.from('profiles').update({ is_banned: status }).eq('id', targetId);
-            alert(`Статус змінено.`); loadUsers();
+            alert(`Виконано.`); loadUsers();
         }
 
         async function moderateRestriction(type, status) {
             const targetId = document.getElementById('admin-target-id').value.trim();
-            if(!targetId) { alert("Вкажіть UUID користувача!"); return; }
+            if(!targetId) { alert("Вкажіть UUID!"); return; }
             let fieldsToUpdate = {};
             if(type === 'posts') fieldsToUpdate = { restrict_posts: status };
             else if(type === 'groups') fieldsToUpdate = { restrict_groups: status };
             else if(type === 'chat_first') fieldsToUpdate = { restrict_chat_first: status };
             else if(type === 'clear_all') fieldsToUpdate = { restrict_posts: false, restrict_groups: false, restrict_chat_first: false };
             await _supabase.from('profiles').update(fieldsToUpdate).eq('id', targetId);
-            alert(`Обмеження змінено.`); loadUsers();
+            alert(`Виконано.`); loadUsers();
         }
 
         async function setAdminStatus(status) {
@@ -1036,19 +965,16 @@
             const { data: admins } = await _supabase.from('profiles').select('*').eq('is_admin', true);
             if(admins && admins.length > 0) {
                 listEl.innerHTML = admins.map(a => `
-                    <div class="list-item" style="border: 1px solid #CCC; background:#F9F9F9;">
+                    <div class="list-item" style="border-bottom: 1px solid #CCC;">
                         <img src="${a.avatar_url || DEFAULT_AVATAR}" class="avatar-sm">
-                        <div style="flex:1;"><b>${a.nickname}</b><br><span class="text-sub">UUID: ${a.id}</span></div>
-                        ${a.id !== myId ? `<button class="btn-text" style="color:var(--danger)" onclick="document.getElementById('admin-target-id').value='${a.id}'; setAdminStatus(false);">[Зняти]</button>` : '<span class="text-sub" style="font-size:11px;">Ви</span>'}
+                        <div style="flex:1;"><b>${a.nickname}</b><br><span class="text-sub">UUID: ${a.id.substring(0,8)}</span></div>
                     </div>`).join('');
-            } else { listEl.innerHTML = '<span class="text-sub">Нічого не знайдено.</span>'; }
+            } else { listEl.innerHTML = '<span class="text-sub">Пусто.</span>'; }
         }
 
         async function updateProfile() {
             const nick = document.getElementById('set-nick').value;
             const av = document.getElementById('set-av').value;
-            const bg = document.getElementById('set-bg').value;
-            localStorage.setItem('custom_bg', bg);
             let up = { nickname: nick }; if(av) up.avatar_url = av;
             await _supabase.from('profiles').update(up).eq('id', myId); location.reload(); 
         }
@@ -1064,7 +990,7 @@
         }
 
         function initRealtime() { _supabase.channel('any').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, (payload) => { const m = payload.new; if(m.sender_id !== myId) { if(currentChatId === m.chat_id) loadMessages(); else if(m.chat_id.includes(myId) || m.chat_id.startsWith("group_")) showToast(m.sender_id, m.text); } }).subscribe(); }
-        function showToast(senderId, text) { const container = document.getElementById('notification-container'); const t = document.createElement('div'); t.className = 'toast'; t.innerHTML = `<b>Нове повідомлення:</b> ${text.substring(0,30)}...`; t.onclick = () => viewProfile(senderId); container.appendChild(t); setTimeout(() => t.remove(), 5000); }
+        function showToast(senderId, text) { const container = document.getElementById('notification-container'); const t = document.createElement('div'); t.className = 'toast'; t.innerHTML = `<b>Повідомлення:</b> ${text.substring(0,20)}...`; t.onclick = () => viewProfile(senderId); container.appendChild(t); setTimeout(() => t.remove(), 5000); }
 
         async function loadUsers() {
             const { data } = await _supabase.from('profiles').select('*').eq('is_banned', false).limit(10);
@@ -1080,102 +1006,47 @@
             }
         }
 
-        function createPublicChat() { if (myRestrictGroups) { alert("Вам обмежена можливість взаємодії з групами."); return; } const n = prompt("Назва паблік чату:"); if(n) _supabase.from('groups').insert([{name: '[PUB] ' + n}]).then(loadGroups); }
-        function createGroup() { if (myRestrictGroups) { alert("Вам обмежена можливість взаємодії з групами."); return; } const n = prompt("Назва групи:"); if(n) _supabase.from('groups').insert([{name:n}]).then(loadGroups); }
-        function startGroupChat(id, name) { if (myRestrictGroups) { alert("Доступ до груп заблоковано."); return; } currentChatId = "group_" + id; document.getElementById('profile-screen').style.display = 'none'; document.getElementById('chat-window').style.display = 'flex'; document.getElementById('chat-title').innerText = name; switchTab('col-main'); loadMessages(); }
+        function createPublicChat() { if (myRestrictGroups) { alert("Обмежено."); return; } const n = prompt("Назва чату:"); if(n) _supabase.from('groups').insert([{name: '[PUB] ' + n}]).then(loadGroups); }
+        function createGroup() { if (myRestrictGroups) { alert("Обмежено."); return; } const n = prompt("Назва групи:"); if(n) _supabase.from('groups').insert([{name:n}]).then(loadGroups); }
+        function startGroupChat(id, name) { if (myRestrictGroups) { alert("Заблоковано."); return; } currentChatId = "group_" + id; document.getElementById('profile-screen').style.display = 'none'; document.getElementById('chat-window').style.display = 'flex'; document.getElementById('chat-title').innerText = name; switchTab('col-main'); loadMessages(); }
 
-        // ОПТИМІЗОВАНА ФУНКЦІЯ ЛАЙКІВ ДЛЯ ПОСТІВ
-        async function toggleLike(postId, btnElement) { 
-            if (!myId) return alert("Авторизуйтесь!");
-            
-            const countSpan = btnElement.querySelector('.like-count');
-            let currentCount = parseInt(countSpan.innerText) || 0;
-            const isLiked = btnElement.classList.contains('active');
-
-            // Оптимістичний UI: відразу міняємо інтерфейс без очікування сервера
-            if (isLiked) {
-                btnElement.classList.remove('active');
-                countSpan.innerText = Math.max(0, currentCount - 1);
-            } else {
-                btnElement.classList.add('active');
-                countSpan.innerText = currentCount + 1;
-            }
-
-            // Фонове оновлення у Supabase
-            const { data: post } = await _supabase.from('posts').select('likes, liked_by').eq('id', postId).maybeSingle(); 
-            if (!post) return; 
-            
-            let likedBy = post.liked_by || []; 
-            let likesCount = parseInt(post.likes) || 0; 
-            const uid = String(myId); 
-            
-            if (isLiked) { 
-                likedBy = likedBy.filter(i => i !== uid); 
-                likesCount = Math.max(0, likesCount - 1); 
-            } else { 
-                if (!likedBy.includes(uid)) {
-                    likedBy.push(uid); 
-                    likesCount++; 
-                }
-            } 
-            await _supabase.from('posts').update({ likes: likesCount, liked_by: likedBy }).eq('id', postId); 
-        }
-
-        async function loadInbox() { const { data } = await _supabase.from('messages').select('*').order('created_at', { ascending: false }).limit(40); if(!data) return; const res = []; const seen = new Set(); for(let m of data) { if(m.sender_id === myId) continue; if(m.chat_id.includes(myId) || m.chat_id.startsWith("group_")) { if(!seen.has(m.chat_id)) { seen.add(m.chat_id); res.push(m); } } if(res.length >= 5) break; } document.getElementById('inbox-list').innerHTML = res.map(m => `<div class="list-item" style="border: 1px solid #CCC; background: #F9F9F9;" onclick="openChatById('${m.chat_id}')"><div style="display:flex; flex-direction:column;"><b>${m.chat_id.startsWith('group_')?'Група':'Нове повідомлення'}:</b> <span class="text-sub">${m.text.substring(0,35)}</span></div></div>`).join(''); }
+        async function toggleLike(postId, authorId, isFeed = false) { const { data: post } = await _supabase.from('posts').select('likes, liked_by').eq('id', postId).single(); if (!post) return; let likedBy = post.liked_by || []; let likesCount = parseInt(post.likes) || 0; const uid = String(myId); if (likedBy.includes(uid)) { likedBy = likedBy.filter(i => i !== uid); likesCount = Math.max(0, likesCount - 1); } else { likedBy.push(uid); likesCount++; } await _supabase.from('posts').update({ likes: likesCount, liked_by: likedBy }).eq('id', postId); if(isFeed) loadFeed(); else loadPosts(authorId); }
+        async function loadInbox() { const { data } = await _supabase.from('messages').select('*').order('created_at', { ascending: false }).limit(20); if(!data) return; const res = []; const seen = new Set(); for(let m of data) { if(m.sender_id === myId) continue; if(m.chat_id.includes(myId) || m.chat_id.startsWith("group_")) { if(!seen.has(m.chat_id)) { seen.add(m.chat_id); res.push(m); } } if(res.length >= 5) break; } document.getElementById('inbox-list').innerHTML = res.map(m => `<div class="list-item" onclick="openChatById('${m.chat_id}')"><div><b>${m.chat_id.startsWith('group_')?'Група':'ЛС'}:</b> <span class="text-sub">${m.text.substring(0,30)}</span></div></div>`).join(''); }
         async function openChatById(chatId) { if(chatId.startsWith("group_")) { const gid = chatId.replace("group_", ""); const {data} = await _supabase.from('groups').select('name').eq('id', gid).single(); if(data) startGroupChat(gid, data.name); } else { const tid = chatId.split('_').find(x => x !== myId); const {data} = await _supabase.from('profiles').select('nickname').eq('id', tid).single(); if(data) openPrivate(tid, data.nickname); } }
-        function showAbout() { clearMainArea(); document.getElementById('wall-posts').innerHTML = `<div class="tab-header">Про проєкт</div><div class="glass-panel card"><h2 style="color:var(--link-color); margin-bottom:10px;">${globalAppInfo.name}</h2><p class="text-sub" style="margin-bottom:15px;">Всі права захищено (с)</p><p style="line-height:1.4; white-space: pre-wrap;">${globalAppInfo.desc}</p></div>`; }
+        function showAbout() { clearMainArea(); document.getElementById('wall-posts').innerHTML = `<div class="tab-header">Про проект</div><div class="glass-panel card"><b style="color:var(--primary); font-size:14px;">${globalAppInfo.name}</b><br><span class="text-sub">Всі права захищено</span><p style="margin-top:10px;">${globalAppInfo.desc}</p></div>`; }
         function showWall() { viewProfile(myId); }
         function goToId() { const i = document.getElementById('target-id-input').value.trim(); if(i) viewProfile(i); }
-        function sendImagePrompt() { const url = prompt("Встав URL картинки:"); if(url) { document.getElementById('msg-input').value = url; sendMessage(); } }
-        async function deletePost(postId, authorId) { if(!confirm("Видалити цей пост?")) return; if(myIsAdmin) await _supabase.from('posts').delete().eq('id', postId); else await _supabase.from('posts').delete().eq('id', postId).eq('author_id', myId); if(authorId) viewProfile(authorId); else loadFeed(); }
-        
-        // ВИПРАВЛЕННЯ БАГУ ПІДПИСОК (замість single використано maybeSingle)
-        async function checkFollowStatus(id) { 
-            const { data } = await _supabase.from('follows').select('*').eq('follower_id', myId).eq('following_id', id).maybeSingle(); 
-            const btn = document.getElementById('follow-btn'); 
-            btn.innerText = data ? "Відписатися" : "Підписатися"; 
-            btn.className = data ? "btn-secondary" : "btn-primary"; 
-            btn.onclick = () => toggleFollow(id, !!data); 
-        }
+        function sendImagePrompt() { const url = prompt("URL картинки:"); if(url) { document.getElementById('msg-input').value = url; sendMessage(); } }
+        async function deletePost(postId, authorId) { if(!confirm("Видалити?")) return; if(myIsAdmin) await _supabase.from('posts').delete().eq('id', postId); else await _supabase.from('posts').delete().eq('id', postId).eq('author_id', myId); if(authorId) viewProfile(authorId); else loadFeed(); }
+        async function checkFollowStatus(id) { const { data } = await _supabase.from('follows').select('*').eq('follower_id', myId).eq('following_id', id).single(); const btn = document.getElementById('follow-btn'); btn.innerText = data ? "Відписатися" : "Підписатися"; btn.onclick = () => toggleFollow(id, !!data); }
         async function toggleFollow(id, isF) { if(isF) await _supabase.from('follows').delete().eq('follower_id', myId).eq('following_id', id); else await _supabase.from('follows').insert([{follower_id:myId, following_id:id}]); viewProfile(id); }
         async function updateFollowCounts(id) { const { count: f1 } = await _supabase.from('follows').select('*', { count: 'exact' }).eq('following_id', id); const { count: f2 } = await _supabase.from('follows').select('*', { count: 'exact' }).eq('follower_id', id); document.getElementById('count-followers').innerText = f1 || 0; document.getElementById('count-following').innerText = f2 || 0; }
-        
-        // ВИПРАВЛЕННЯ БАГУ ПІДПИСОК (замість single використано maybeSingle)
-        async function checkFavoriteStatus(id) { 
-            const btn = document.getElementById('fav-btn'); 
-            const { data } = await _supabase.from('favorites').select('*').eq('user_id', myId).eq('favorite_id', id).maybeSingle(); 
-            btn.innerText = data ? "Видалити з обраного" : "В обране"; 
-            btn.onclick = () => toggleFavorite(id, !!data); 
-        }
+        async function checkFavoriteStatus(id) { const btn = document.getElementById('fav-btn'); const { data } = await _supabase.from('favorites').select('*').eq('user_id', myId).eq('favorite_id', id).single(); btn.innerText = data ? "З обраного" : "В обране"; btn.onclick = () => toggleFavorite(id, !!data); }
         async function toggleFavorite(id, isFav) { if(isFav) await _supabase.from('favorites').delete().eq('user_id', myId).eq('favorite_id', id); else await _supabase.from('favorites').insert([{user_id: myId, favorite_id: id}]); checkFavoriteStatus(id); }
-        
-        async function loadFavoritesTab() { clearMainArea(); const wall = document.getElementById('wall-posts'); wall.innerHTML = '<div class="tab-header">Обрані контакти</div>'; const { data: favs } = await _supabase.from('favorites').select('favorite_id').eq('user_id', myId); if(!favs || favs.length === 0) { wall.innerHTML += '<div class="text-sub" style="padding-left:8px;">Список обраних порожній.</div>'; return; } const { data: users } = await _supabase.from('profiles').select('*').in('id', favs.map(f => f.favorite_id)); if(users) { users.forEach(u => { const div = document.createElement('div'); div.className = 'list-item glass-panel card'; div.style.marginBottom = '12px'; div.onclick = () => viewProfile(u.id); div.innerHTML = `<img src="${u.avatar_url || DEFAULT_AVATAR}" class="avatar-md"><div><b>${u.nickname}</b><br><span class="text-sub">UUID: ${u.id.substring(0,8)}...</span></div>`; wall.appendChild(div); }); } }
+        async function loadFavoritesTab() { clearMainArea(); const wall = document.getElementById('wall-posts'); wall.innerHTML = '<div class="tab-header">Обрані контакти</div>'; const { data: favs } = await _supabase.from('favorites').select('favorite_id').eq('user_id', myId); if(!favs || favs.length === 0) { wall.innerHTML += '<div class="text-sub">Пусто.</div>'; return; } const { data: users } = await _supabase.from('profiles').select('*').in('id', favs.map(f => f.favorite_id)); if(users) { users.forEach(u => { const div = document.createElement('div'); div.className = 'list-item glass-panel card'; div.onclick = () => viewProfile(u.id); div.innerHTML = `<img src="${u.avatar_url || DEFAULT_AVATAR}" class="avatar-md"><div><b>${u.nickname}</b></div>`; wall.appendChild(div); }); } }
 
         function showSearchEngine() {
             clearMainArea();
             const wall = document.getElementById('wall-posts');
             wall.innerHTML = `
-                <div class="tab-header">Пошуковик сайтів</div>
-                <div class="glass-panel card" style="background: #F4F8FC; border: 1px solid #8FA6C3;">
-                    <span class="section-title">Додати новий сайт у каталог</span>
-                    <label class="form-label">Назва сайту</label>
-                    <input type="text" id="web-title" placeholder="Наприклад: Мій Блог або Google">
-                    <label class="form-label">Адреса сайту (URL)</label>
-                    <input type="text" id="web-url" placeholder="https://example.com">
-                    <label class="form-label">Короткий опис</label>
-                    <textarea id="web-desc" rows="2" placeholder="Опишіть, про що цей ресурс..."></textarea>
-                    <button class="btn-primary mt-15" onclick="addWebsite()">Внести до реєстру</button>
+                <div class="tab-header">Пошук сайтів</div>
+                <div class="glass-panel card">
+                    <span class="section-title">Додати сайт</span>
+                    <label class="form-label">Назва:</label><input type="text" id="web-title">
+                    <label class="form-label">URL:</label><input type="text" id="web-url" value="http://">
+                    <label class="form-label">Опис:</label><textarea id="web-desc" rows="2"></textarea>
+                    <button class="btn-primary mt-15" onclick="addWebsite()">Додати</button>
                 </div>
                 <div class="glass-panel card">
-                    <span class="section-title">Глобальний пошук за базою даних</span>
+                    <span class="section-title">Пошук</span>
                     <div class="flex-row">
-                        <input type="text" id="web-search-query" placeholder="Введіть назву сайту..." style="margin:0;" onkeyup="if(event.keyCode===13) searchWebsites()">
-                        <button class="btn-secondary" style="width:auto; min-width:80px;" onclick="searchWebsites()">Шукати</button>
+                        <input type="text" id="web-search-query" style="margin:0;">
+                        <button class="btn-secondary" onclick="searchWebsites()">Шукати</button>
                     </div>
                 </div>
                 <div class="glass-panel card" id="web-results-card" style="display:none;">
-                    <span class="section-title">Знайдені збіги</span>
-                    <div id="web-results-list" class="scroll-area" style="max-height: 400px; display:flex; flex-direction:column; gap:10px;"></div>
+                    <span class="section-title">Результати</span>
+                    <div id="web-results-list" class="scroll-area" style="max-height: 400px; background: #FFF; border: 1px solid var(--border-main);"></div>
                 </div>
             `;
         }
@@ -1184,10 +1055,9 @@
             const title = document.getElementById('web-title').value.trim();
             const url = document.getElementById('web-url').value.trim();
             const desc = document.getElementById('web-desc').value.trim();
-            if (!title || !url || !desc) { alert("Заповніть всі текстові поля перед додаванням!"); return; }
+            if (!title || !url || !desc) { alert("Заповніть поля!"); return; }
             await _supabase.from('websites').insert([{ title: title, url: url, description: desc, added_by: String(myId) }]);
-            alert("Сайт успішно індексовано!");
-            document.getElementById('web-title').value = ''; document.getElementById('web-url').value = ''; document.getElementById('web-desc').value = '';
+            alert("Додано!");
         }
 
         async function searchWebsites() {
@@ -1196,8 +1066,8 @@
             const { data } = await _supabase.from('websites').select('*').ilike('title', `%${query}%`).order('created_at', { ascending: false });
             const card = document.getElementById('web-results-card'); const list = document.getElementById('web-results-list');
             card.style.display = 'block';
-            if (!data || data.length === 0) { list.innerHTML = '<span class="text-sub">На жаль, за вашим запитом нічого не знайдено.</span>'; return; }
-            list.innerHTML = data.map(site => `<div style="padding:10px; border-bottom:1px dashed #CCC; background:#FFFBE6; border: 1px solid #F5E8A3; border-radius: var(--radius-sm);"><div style="font-size:13px; font-weight:bold; margin-bottom:2px;"><a href="${site.url}" target="_blank" style="color:var(--primary); font-weight:bold; text-decoration:underline;">${site.title}</a></div><div style="margin-bottom:6px; font-size:10px;"><a href="${site.url}" target="_blank" style="color:green; text-decoration:none;">${site.url}</a></div><div style="font-size:11px; color:var(--text-main); line-height:1.4;">${site.description}</div></div>`).join('');
+            if (!data || data.length === 0) { list.innerHTML = '<div style="padding:5px;">Нічого не знайдено.</div>'; return; }
+            list.innerHTML = data.map(site => `<div style="padding:6px; border-bottom:1px dotted #CCC;"><div style="font-weight:bold;"><a href="${site.url}" target="_blank">${site.title}</a></div><div style="font-size:10px;"><a href="${site.url}" target="_blank" style="color:green;">${site.url}</a></div><div style="font-size:11px;">${site.description}</div></div>`).join('');
         }
 
         function showVideos() {
@@ -1205,11 +1075,11 @@
             const wall = document.getElementById('wall-posts');
             wall.innerHTML = `
                 <div class="tab-header">Відеозаписи</div>
-                <div class="glass-panel card" style="background: #F4F8FC; border: 1px solid #8FA6C3;">
-                    <span class="section-title">Додати нове відео</span>
-                    <label class="form-label">Назва відео</label><input type="text" id="video-title">
-                    <label class="form-label">Пряме посилання на відеофайл (.mp4, .webm)</label><input type="text" id="video-url">
-                    <button class="btn-primary mt-15" onclick="addVideo()">Опублікувати відео</button>
+                <div class="glass-panel card">
+                    <span class="section-title">Додати відео</span>
+                    <label class="form-label">Назва:</label><input type="text" id="video-title">
+                    <label class="form-label">URL файлу (.mp4):</label><input type="text" id="video-url">
+                    <button class="btn-primary mt-15" onclick="addVideo()">Додати</button>
                 </div>
                 <div id="video-feed"></div>
             `;
@@ -1222,13 +1092,13 @@
             const url = document.getElementById('video-url').value.trim();
             if (!title || !url) return;
             await _supabase.from('videos').insert([{ author_id: String(myId), title: title, url: url, likes: 0, liked_by: [] }]);
-            document.getElementById('video-title').value = ''; document.getElementById('video-url').value = ''; loadVideos();
+            loadVideos();
         }
 
         async function loadVideos() {
             const feed = document.getElementById('video-feed');
             const { data: videos } = await _supabase.from('videos').select('*').order('created_at', { ascending: false });
-            if (!videos || videos.length === 0) { feed.innerHTML = '<div class="text-sub">Відеозаписів ще немає.</div>'; return; }
+            if (!videos || videos.length === 0) { feed.innerHTML = '<div class="text-sub">Пусто.</div>'; return; }
             const authorIds = [...new Set(videos.map(v => v.author_id))];
             const { data: users } = await _supabase.from('profiles').select('id, nickname').in('id', authorIds);
             if(users) users.forEach(u => userCache[u.id] = u);
@@ -1236,56 +1106,23 @@
                 const isLiked = (v.liked_by || []).includes(String(myId));
                 const canDelete = (v.author_id === myId || myIsAdmin);
                 const authorName = userCache[v.author_id] ? userCache[v.author_id].nickname : `Автор`;
-                return `<div class="post"><div class="post-header"><span><b>${v.title}</b> <span class="text-sub">| від <a onclick="viewProfile('${v.author_id}')">${authorName}</a></span></span>${canDelete ? `<button class="btn-text btn-delete" style="color:var(--danger)" onclick="deleteVideo('${v.id}')">[x] Видалити</button>` : ''}</div><div class="post-body" style="padding: 0; background: #000; text-align: center;"><video controls style="width: 100%; max-height: 400px; display: block;" preload="metadata"><source src="${v.url}" type="video/mp4"></video></div><div class="post-footer"><button onclick="toggleVideoLike('${v.id}', this)" class="btn-like ${isLiked ? 'active' : ''}">&hearts; (<span class="like-count">${v.likes || 0}</span>)</button></div></div>`;
+                return `<div class="post"><div class="post-header"><span><b>${v.title}</b> | <a onclick="viewProfile('${v.author_id}')">${authorName}</a></span>${canDelete ? `<a class="btn-delete" href="javascript:void(0)" onclick="deleteVideo('${v.id}')">[x] Видалити</a>` : ''}</div><div class="post-body" style="padding: 0; background: #000; text-align: center;"><video controls style="width: 100%; max-height: 300px; display: block;"><source src="${v.url}" type="video/mp4"></video></div><div class="post-footer"><button onclick="toggleVideoLike('${v.id}')" class="btn-like ${isLiked ? 'active' : ''}">&hearts; (${v.likes || 0})</button></div></div>`;
             }).join('');
         }
 
-        async function deleteVideo(id) { if(confirm("Видалити це відео?")) { await _supabase.from('videos').delete().eq('id', id); loadVideos(); } }
-        
-        // ОПТИМІЗОВАНА ФУНКЦІЯ ЛАЙКІВ ДЛЯ ВІДЕО
-        async function toggleVideoLike(videoId, btnElement) { 
-            if (!myId) return alert("Авторизуйтесь!");
-            const countSpan = btnElement.querySelector('.like-count');
-            let currentCount = parseInt(countSpan.innerText) || 0;
-            const isLiked = btnElement.classList.contains('active');
-            
-            if (isLiked) {
-                btnElement.classList.remove('active');
-                countSpan.innerText = Math.max(0, currentCount - 1);
-            } else {
-                btnElement.classList.add('active');
-                countSpan.innerText = currentCount + 1;
-            }
-
-            const { data: video } = await _supabase.from('videos').select('likes, liked_by').eq('id', videoId).maybeSingle(); 
-            if (!video) return; 
-            
-            let likedBy = video.liked_by || []; 
-            let likesCount = parseInt(video.likes) || 0; 
-            const uid = String(myId); 
-            
-            if (isLiked) { 
-                likedBy = likedBy.filter(i => i !== uid); 
-                likesCount = Math.max(0, likesCount - 1); 
-            } else { 
-                if (!likedBy.includes(uid)) {
-                    likedBy.push(uid); 
-                    likesCount++; 
-                }
-            } 
-            await _supabase.from('videos').update({ likes: likesCount, liked_by: likedBy }).eq('id', videoId); 
-        }
+        async function deleteVideo(id) { if(confirm("Видалити?")) { await _supabase.from('videos').delete().eq('id', id); loadVideos(); } }
+        async function toggleVideoLike(videoId) { const { data: video } = await _supabase.from('videos').select('likes, liked_by').eq('id', videoId).single(); if (!video) return; let likedBy = video.liked_by || []; let likesCount = parseInt(video.likes) || 0; const uid = String(myId); if (likedBy.includes(uid)) { likedBy = likedBy.filter(i => i !== uid); likesCount = Math.max(0, likesCount - 1); } else { likedBy.push(uid); likesCount++; } await _supabase.from('videos').update({ likes: likesCount, liked_by: likedBy }).eq('id', videoId); loadVideos(); }
 
         function showMailClient() {
             clearMainArea(); switchTab('col-main'); 
             const wall = document.getElementById('wall-posts');
             let emailStatusHTML = '';
             if (!myInternalEmail) {
-                emailStatusHTML = `<div class="glass-panel card" style="background: #FFFBE6; border: 1px solid #F5E8A3; margin-bottom: 12px;"><span class="section-title">Реєстрація поштової скриньки</span><p style="margin-bottom: 10px; line-height: 1.4;">Створіть унікальну адресу вигляду <b>ім'я@spilkuvania.com</b></p><div style="display: flex; gap: 4px; align-items: center;"><input type="text" id="mail-prefix-input" placeholder="Введіть префікс (наприклад: alex)" style="margin:0; flex: 1;"><b style="font-size: 12px; padding: 0 5px;">@spilkuvania.com</b></div><button class="btn-primary mt-15" onclick="createInternalEmail()">Створити e-mail</button></div>`;
+                emailStatusHTML = `<div class="glass-panel card"><span class="section-title">Створити скриньку</span><p style="margin-bottom: 5px;">Створіть адресу <b>ім'я@spilkuvania.com</b></p><div style="display: flex; align-items: center;"><input type="text" id="mail-prefix-input" style="margin:0; flex: 1;"><b style="font-size: 11px; padding-left: 5px;">@spilkuvania.com</b></div><button class="btn-primary mt-15" onclick="createInternalEmail()">Створити</button></div>`;
             } else {
-                emailStatusHTML = `<div class="glass-panel card" style="background: #F4F8FC; border: 1px solid #8FA6C3; margin-bottom: 12px;"><span class="section-title">Ваша адреса</span><div style="font-size: 12px; font-weight: bold; color: var(--primary); padding: 4px 0;">Поточна скринька: <span style="text-decoration: underline; color: var(--danger);">${myInternalEmail}</span></div></div>`;
+                emailStatusHTML = `<div class="glass-panel card"><span class="section-title">Моя скринька</span><b>${myInternalEmail}</b></div>`;
             }
-            wall.innerHTML = `<div class="tab-header">Вбудований поштовий клієнт</div>${emailStatusHTML}<div id="mail-client-workspace" style="${myInternalEmail ? '' : 'display: none;'}"><div class="glass-panel card" style="background: #F0F4F9; border: 1px solid var(--glass-border); margin-bottom: 12px;"><span class="section-title">Надіслати нового листа</span><label class="form-label">Кому</label><input type="text" id="mail-to-input" placeholder="someone@spilkuvania.com"><label class="form-label">Тема листа</label><input type="text" id="mail-subject-input"><label class="form-label">Текст листа</label><textarea id="mail-body-input" rows="4"></textarea><button class="btn-primary mt-15" onclick="sendSocialEmail()">Надіслати листа</button></div><div class="glass-panel card"><div style="display:flex; justify-content: space-between; align-items:center; margin-bottom: 10px; border-bottom: 1px solid var(--glass-border); padding-bottom: 4px;"><b style="color: var(--link-color);">Скринька «Вхідні»</b><button class="btn-secondary" style="width:auto; padding: 2px 8px; font-size:10px;" onclick="loadInboxEmails()">Оновити</button></div><div id="inbox-emails-list" class="scroll-area" style="max-height: 400px; display:flex; flex-direction:column; gap:8px;">Завантаження повідомлень...</div></div></div>`;
+            wall.innerHTML = `<div class="tab-header">Пошта</div>${emailStatusHTML}<div id="mail-client-workspace" style="${myInternalEmail ? '' : 'display: none;'}"><div class="glass-panel card"><span class="section-title">Написати листа</span><label class="form-label">Кому:</label><input type="text" id="mail-to-input"><label class="form-label">Тема:</label><input type="text" id="mail-subject-input"><label class="form-label">Текст:</label><textarea id="mail-body-input" rows="4"></textarea><button class="btn-primary mt-15" onclick="sendSocialEmail()">Надіслати</button></div><div class="glass-panel card"><div class="section-title">Вхідні <button class="btn-secondary" style="float:right; padding: 0 4px;" onclick="loadInboxEmails()">Оновити</button></div><div id="inbox-emails-list" class="scroll-area" style="max-height: 300px; background:#FFF; border:1px solid var(--border-main);"></div></div></div>`;
             if (myInternalEmail) loadInboxEmails();
         }
 
@@ -1294,9 +1131,9 @@
             if (!prefix) return;
             const fullEmail = prefix + '@spilkuvania.com';
             const { data: checkEmail } = await _supabase.from('profiles').select('id').eq('internal_email', fullEmail);
-            if (checkEmail && checkEmail.length > 0) { alert("Ця поштова адреса вже зайнята іншим користувачем!"); return; }
+            if (checkEmail && checkEmail.length > 0) { alert("Зайнято!"); return; }
             await _supabase.from('profiles').update({ internal_email: fullEmail }).eq('id', myId);
-            myInternalEmail = fullEmail; alert("Вітаємо! Ваш поштовий ящик успішно активовано."); showMailClient();
+            myInternalEmail = fullEmail; alert("Готово!"); showMailClient();
         }
 
         async function sendSocialEmail() {
@@ -1306,28 +1143,28 @@
             const body = document.getElementById('mail-body-input').value.trim();
             if (!receiverEmail || !body) return;
             const { data: recipient } = await _supabase.from('profiles').select('nickname').eq('internal_email', receiverEmail).single();
-            if (!recipient) { alert("Користувача не знайдено!"); return; }
+            if (!recipient) { alert("Не знайдено!"); return; }
             await _supabase.from('social_mail').insert([{ sender_email: myInternalEmail, receiver_email: receiverEmail, subject: subject || '(Без теми)', body: body }]);
-            alert("Лист успішно надіслано!"); document.getElementById('mail-to-input').value = ''; document.getElementById('mail-subject-input').value = ''; document.getElementById('mail-body-input').value = '';
+            alert("Надіслано!"); 
         }
 
         async function loadInboxEmails() {
             const listEl = document.getElementById('inbox-emails-list'); if (!myInternalEmail) return;
             const { data: emails } = await _supabase.from('social_mail').select('*').eq('receiver_email', myInternalEmail).order('created_at', { ascending: false });
-            if (!emails || emails.length === 0) { listEl.innerHTML = `<div style="padding:12px; color:var(--text-sub); text-align:center;">Порожня скринька.</div>`; return; }
-            listEl.innerHTML = emails.map(mail => `<div class="list-item" style="flex-direction: column; align-items: flex-start; background: ${mail.is_read?'#FFFFFF':'#FFFBE6'}; border: ${mail.is_read?'1px solid #CCC':'1px solid #F5E8A3'}; padding: 8px; margin-bottom: 4px; cursor: default;"><div style="display:flex; justify-content:space-between; width:100%; border-bottom: 1px dashed #CCC; padding-bottom:4px; margin-bottom:6px; font-size:10px; color:var(--text-sub);"><span><b>Від:</b> ${escapeHtml(mail.sender_email)}</span><span>${new Date(mail.created_at).toLocaleString()}</span></div><div style="font-weight: bold; font-size: 11px; margin-bottom: 4px; color: var(--link-color);">Тема: ${escapeHtml(mail.subject)}</div><div style="font-size: 11px; line-height: 1.4; white-space: pre-wrap; width: 100%; word-wrap: break-word; color:#000;">${escapeHtml(mail.body)}</div>${!mail.is_read ? `<div style="text-align: right; width: 100%; margin-top: 6px;"><button class="btn-secondary" style="width:auto; font-size:9px; padding:2px 6px;" onclick="markEmailAsRead(${mail.id})">Читати</button></div>` : ''}</div>`).join('');
+            if (!emails || emails.length === 0) { listEl.innerHTML = `<div style="padding:5px;">Пусто.</div>`; return; }
+            listEl.innerHTML = emails.map(mail => `<div style="border-bottom: 1px dotted #CCC; background: ${mail.is_read?'#FFFFFF':'#FFFFCC'}; padding: 6px;"><div style="font-size:10px; color:#666;">Від: ${escapeHtml(mail.sender_email)} | ${new Date(mail.created_at).toLocaleString()}</div><b>${escapeHtml(mail.subject)}</b><div style="font-size: 11px; margin-top:4px;">${escapeHtml(mail.body)}</div>${!mail.is_read ? `<button class="btn-secondary" style="font-size:9px; padding:1px 4px; margin-top:4px;" onclick="markEmailAsRead(${mail.id})">Прочитано</button>` : ''}</div>`).join('');
         }
         async function markEmailAsRead(mailId) { await _supabase.from('social_mail').update({ is_read: true }).eq('id', mailId); loadInboxEmails(); }
         function escapeHtml(text) { if (!text) return ''; return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;"); }
 
         function showChannelsList() {
             clearMainArea(); const wall = document.getElementById('wall-posts');
-            wall.innerHTML = `<div class="tab-header">Публічні канали</div><div class="flex-row" style="margin-bottom: 12px;"><input type="text" id="channel-search-query" placeholder="Пошук каналів..." style="margin:0;"><button class="btn-secondary" style="width:auto; min-width:80px;" onclick="searchChannels()">Знайти</button></div><button class="btn-dashed" style="width: 100%; margin-bottom: 12px; padding: 10px;" onclick="showChannelCreationForm()">+ Створити свій канал</button><div id="channels-feed" class="scroll-area">Завантаження...</div>`;
+            wall.innerHTML = `<div class="tab-header">Канали</div><div class="flex-row" style="margin-bottom: 8px;"><input type="text" id="channel-search-query" style="margin:0;"><button class="btn-secondary" onclick="searchChannels()">Знайти</button></div><button class="btn-secondary" style="width: 100%; margin-bottom: 8px;" onclick="showChannelCreationForm()">Створити канал</button><div id="channels-feed" class="scroll-area" style="background:#FFF; border:1px solid var(--border-main);"></div>`;
             loadChannels();
         }
         function showChannelCreationForm() {
             const wall = document.getElementById('wall-posts');
-            wall.innerHTML = `<div class="tab-header">Створення каналу</div><div class="glass-panel card" style="background: #F4F8FC;"><label class="form-label">Назва каналу</label><input type="text" id="chan-name"><label class="form-label">Опис</label><textarea id="chan-desc" rows="2"></textarea><label class="form-label">Тип каналу</label><select id="chan-type"><option value="mixed">Паблік</option><option value="blog">Тільки Блог</option><option value="video">Тільки Відео</option></select><label class="form-label">URL Аватарки</label><input type="text" id="chan-avatar"><label class="form-label">URL Банера</label><input type="text" id="chan-banner"><label class="form-label">Приватність</label><select id="chan-private" onchange="toggleChanPrivateFields()"><option value="false">Для всіх</option><option value="true">Приватний</option></select><input type="text" id="chan-viewers" placeholder="UUID глядачів через кому" style="display:none; margin-top:5px;"><label class="form-label mt-15">Хто може публікувати пости?</label><input type="text" id="chan-posters" placeholder="UUID редакторів через кому"><button class="btn-primary mt-15" onclick="createChannel()">Створити канал</button><button class="btn-secondary mt-15" onclick="showChannelsList()">Скасувати</button></div>`;
+            wall.innerHTML = `<div class="tab-header">Створення каналу</div><div class="glass-panel card"><label class="form-label">Назва:</label><input type="text" id="chan-name"><label class="form-label">Опис:</label><textarea id="chan-desc" rows="2"></textarea><label class="form-label">Тип:</label><select id="chan-type"><option value="mixed">Змішаний</option><option value="blog">Тільки Блог</option><option value="video">Тільки Відео</option></select><label class="form-label">URL Аватарки:</label><input type="text" id="chan-avatar"><label class="form-label">URL Банера:</label><input type="text" id="chan-banner"><label class="form-label">Приватність:</label><select id="chan-private" onchange="toggleChanPrivateFields()"><option value="false">Для всіх</option><option value="true">Приватний</option></select><input type="text" id="chan-viewers" placeholder="UUID глядачів через кому" style="display:none; margin-top:5px;"><label class="form-label mt-15">UUID редакторів:</label><input type="text" id="chan-posters"><button class="btn-primary mt-15" onclick="createChannel()">Створити</button></div>`;
         }
         function toggleChanPrivateFields() { document.getElementById('chan-viewers').style.display = document.getElementById('chan-private').value === "true" ? "block" : "none"; }
         async function createChannel() {
@@ -1340,8 +1177,8 @@
         }
         async function loadChannels() { const feed = document.getElementById('channels-feed'); const { data: channels } = await _supabase.from('channels').select('*').order('created_at', { ascending: false }); renderChannelsFeed(channels, feed); }
         function renderChannelsFeed(channels, feed) {
-            if (!channels || channels.length === 0) { feed.innerHTML = '<div class="text-sub">Каналів не знайдено.</div>'; return; }
-            feed.innerHTML = channels.map(c => { if (c.is_private && c.owner_id !== String(myId) && !(c.allowed_viewers || []).includes(String(myId)) && !myIsAdmin) return ''; return `<div class="list-item glass-panel card" style="margin-bottom: 10px; cursor: pointer; align-items: flex-start;" onclick="viewChannel('${c.id}')"><img src="${c.avatar_url}" class="avatar-md"><div><b style="font-size: 13px;">${c.name}</b> <span class="channel-badge">${c.type}</span><br><span class="text-sub" style="font-size: 11px;">${c.description ? c.description.substring(0, 50) + '...' : 'Без опису'}</span></div></div>`; }).join('');
+            if (!channels || channels.length === 0) { feed.innerHTML = '<div style="padding:5px;">Пусто.</div>'; return; }
+            feed.innerHTML = channels.map(c => { if (c.is_private && c.owner_id !== String(myId) && !(c.allowed_viewers || []).includes(String(myId)) && !myIsAdmin) return ''; return `<div class="list-item" onclick="viewChannel('${c.id}')"><img src="${c.avatar_url}" class="avatar-md"><div><b>${c.name}</b> <span class="channel-badge">${c.type}</span><br><span style="font-size: 10px; color:#666;">${c.description ? c.description.substring(0, 50) + '...' : 'Без опису'}</span></div></div>`; }).join('');
         }
         
         async function viewChannel(channelId) {
@@ -1350,34 +1187,32 @@
             const { data: channel } = await _supabase.from('channels').select('*').eq('id', channelId).single(); 
             if (!channel) return;
             
-            // ВИПРАВЛЕННЯ БАГУ ПІДПИСОК НА КАНАЛИ (замість single використано maybeSingle)
-            const { data: subData } = await _supabase.from('channel_subscriptions').select('*').eq('user_id', String(myId)).eq('channel_id', channelId).maybeSingle(); 
+            const { data: subData } = await _supabase.from('channel_subscriptions').select('*').eq('user_id', String(myId)).eq('channel_id', channelId).single(); 
             const isSubbed = !!subData;
 
-            // Проверяем, может ли текущий пользователь публиковать контент в этот канал
             const canPost = (channel.owner_id === String(myId) || (channel.allowed_posters && channel.allowed_posters.includes(String(myId))) || myIsAdmin);
 
             wall.innerHTML = `
-                <div class="glass-panel card" style="padding: 0; overflow: visible;">
+                <div class="glass-panel card" style="padding: 0;">
                     <img src="${channel.banner_url || DEFAULT_AVATAR}" class="channel-banner">
                     <div class="channel-header-info">
                         <img src="${channel.avatar_url}" class="channel-avatar">
-                        <h2 style="margin-bottom: 5px; color: var(--primary);">${channel.name}</h2>
-                        <p class="text-sub" style="margin-bottom: 10px;">${channel.description || ''}</p>
-                        <button class="${isSubbed ? 'btn-secondary' : 'btn-primary'}" style="width:auto;" onclick="toggleChannelSub('${channel.id}', ${isSubbed})">${isSubbed ? 'Відписатися' : 'Підписатися'}</button>
+                        <b style="font-size:14px; color:var(--primary);">${channel.name}</b>
+                        <div style="font-size:11px; margin-bottom:8px;">${channel.description || ''}</div>
+                        <button class="${isSubbed ? 'btn-secondary' : 'btn-primary'}" onclick="toggleChannelSub('${channel.id}', ${isSubbed})">${isSubbed ? 'Відписатися' : 'Підписатися'}</button>
                     </div>
                 </div>
                 
                 ${canPost ? `
-                <div class="glass-panel card" style="background: #F0F4F9;">
-                    <span class="section-title">Опублікувати в канал</span>
-                    <textarea id="chan-post-text" rows="2" placeholder="Текст поста або назва відео..."></textarea>
-                    <input type="text" id="chan-post-img" placeholder="URL картинки (необов'язково)">
-                    <input type="text" id="chan-post-video" placeholder="URL відео .mp4/.webm (необов'язково)">
-                    <button class="btn-primary mt-15" onclick="createChannelPost('${channel.id}')">Опублікувати</button>
+                <div class="glass-panel card">
+                    <span class="section-title">Додати запис</span>
+                    <textarea id="chan-post-text" rows="2"></textarea>
+                    <input type="text" id="chan-post-img" placeholder="URL картинки (IMG)">
+                    <input type="text" id="chan-post-video" placeholder="URL відео (.mp4)">
+                    <button class="btn-primary mt-15" onclick="createChannelPost('${channel.id}')">Відправити</button>
                 </div>` : ''}
                 
-                <div id="channel-feed" class="scroll-area">Завантаження стрічки...</div>
+                <div id="channel-feed" class="scroll-area"></div>
             `;
             
             loadChannelPosts(channel.id);
@@ -1390,9 +1225,8 @@
 
             if (!text && !img && !video) return;
 
-            // Используем UUID канала в качестве author_id для таблиц posts и videos
             if (video) {
-                await _supabase.from('videos').insert([{ author_id: channelId, title: text || "Відео каналу", url: video, likes: 0, liked_by: [] }]);
+                await _supabase.from('videos').insert([{ author_id: channelId, title: text || "Відео", url: video, likes: 0, liked_by: [] }]);
             } else {
                 const finalContent = img ? `${text}\n\n${img}` : text;
                 await _supabase.from('posts').insert([{ author_id: channelId, text: finalContent, likes: 0, liked_by: [] }]);
@@ -1404,7 +1238,6 @@
             const feed = document.getElementById('channel-feed');
             feed.innerHTML = '';
 
-            // Подтягиваем и посты, и видео канала
             const { data: posts } = await _supabase.from('posts').select('*').eq('author_id', channelId);
             const { data: videos } = await _supabase.from('videos').select('*').eq('author_id', channelId);
 
@@ -1412,7 +1245,7 @@
             combined.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
             if (combined.length === 0) {
-                feed.innerHTML = '<div class="text-sub">У цьому каналі ще немає записів.</div>';
+                feed.innerHTML = '<div class="text-sub">Пусто.</div>';
                 return;
             }
 
@@ -1426,10 +1259,10 @@
                     div.innerHTML = `
                         <div class="post-header"><span><b>${item.title}</b></span></div>
                         <div class="post-body" style="padding:0; background:#000; text-align:center;">
-                            <video controls style="width:100%; max-height:400px;" preload="metadata"><source src="${item.url}" type="video/mp4"></video>
+                            <video controls style="width:100%; max-height:300px;"><source src="${item.url}" type="video/mp4"></video>
                         </div>
                         <div class="post-footer">
-                            <button onclick="toggleVideoLike('${item.id}', this)" class="btn-like ${isLiked ? 'active' : ''}">&hearts; (<span class="like-count">${item.likes || 0}</span>)</button>
+                            <button onclick="toggleVideoLike('${item.id}'); setTimeout(() => loadChannelPosts('${channelId}'), 500);" class="btn-like ${isLiked ? 'active' : ''}">&hearts; (${item.likes || 0})</button>
                         </div>
                     `;
                 } else {
@@ -1437,7 +1270,7 @@
                         <div class="post-header"><span class="text-sub">${new Date(item.created_at).toLocaleString()}</span></div>
                         <div class="post-body">${parseContent(item.text)}</div>
                         <div class="post-footer">
-                            <button onclick="toggleLike('${item.id}', this)" class="btn-like ${isLiked ? 'active' : ''}">&hearts; (<span class="like-count">${item.likes || 0}</span>)</button>
+                            <button onclick="toggleLike('${item.id}', '${channelId}', false); setTimeout(() => loadChannelPosts('${channelId}'), 500);" class="btn-like ${isLiked ? 'active' : ''}">&hearts; (${item.likes || 0})</button>
                         </div>
                     `;
                 }
@@ -1450,8 +1283,8 @@
         async function loadRecommendedChannels() {
             const list = document.getElementById('recommended-channels-list'); if (!list) return;
             const { data: channels } = await _supabase.from('channels').select('*').eq('is_private', false).limit(5);
-            if (!channels || channels.length === 0) { list.innerHTML = '<span class="text-sub">Немає каналів для рекомендації.</span>'; return; }
-            list.innerHTML = channels.map(c => `<div class="list-item" onclick="viewChannel('${c.id}')" style="align-items: center;"><img src="${c.avatar_url}" class="avatar-sm" style="border-radius:3px;"><div style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:11px;"><b>${c.name}</b></div></div>`).join('');
+            if (!channels || channels.length === 0) { list.innerHTML = '<span class="text-sub">Пусто.</span>'; return; }
+            list.innerHTML = channels.map(c => `<div class="list-item" onclick="viewChannel('${c.id}')"><img src="${c.avatar_url}" class="avatar-sm"><div><b>${c.name}</b></div></div>`).join('');
         }
 
         async function loadSubscriptionsTab() {
@@ -1459,35 +1292,33 @@
             const wall = document.getElementById('wall-posts');
             wall.innerHTML = '<div class="tab-header">Мої підписки</div>';
 
-            wall.innerHTML += '<span class="section-title">Користувачі</span><div id="subs-users" class="scroll-area" style="max-height: 250px; margin-bottom: 15px;">Завантаження...</div>';
-            wall.innerHTML += '<span class="section-title">Канали</span><div id="subs-channels" class="scroll-area" style="max-height: 250px;">Завантаження...</div>';
+            wall.innerHTML += '<span class="section-title">Користувачі</span><div id="subs-users" class="scroll-area glass-panel card" style="max-height: 150px; background:#FFF;"></div>';
+            wall.innerHTML += '<span class="section-title">Канали</span><div id="subs-channels" class="scroll-area glass-panel card" style="max-height: 150px; background:#FFF;"></div>';
 
-            // 1. Загрузка подписок на пользователей
             const { data: userSubs } = await _supabase.from('follows').select('following_id').eq('follower_id', String(myId));
             if (userSubs && userSubs.length > 0) {
                 const ids = userSubs.map(s => s.following_id);
                 const { data: users } = await _supabase.from('profiles').select('*').in('id', ids);
                 document.getElementById('subs-users').innerHTML = users.map(u => `
-                    <div class="list-item glass-panel card" style="margin-bottom: 8px; cursor: pointer;" onclick="viewProfile('${u.id}')">
+                    <div class="list-item" onclick="viewProfile('${u.id}')">
                         <img src="${u.avatar_url || DEFAULT_AVATAR}" class="avatar-sm">
                         <div><b>${u.nickname}</b></div>
                     </div>`).join('');
             } else {
-                document.getElementById('subs-users').innerHTML = '<div class="text-sub" style="padding: 10px;">Ви ще ні на кого не підписані.</div>';
+                document.getElementById('subs-users').innerHTML = '<div style="padding:5px;">Пусто.</div>';
             }
 
-            // 2. Загрузка подписок на каналы
             const { data: chanSubs } = await _supabase.from('channel_subscriptions').select('channel_id').eq('user_id', String(myId));
             if (chanSubs && chanSubs.length > 0) {
                 const cids = chanSubs.map(s => s.channel_id);
                 const { data: channels } = await _supabase.from('channels').select('*').in('id', cids);
                 document.getElementById('subs-channels').innerHTML = channels.map(c => `
-                    <div class="list-item glass-panel card" style="margin-bottom: 8px; cursor: pointer;" onclick="viewChannel('${c.id}')">
+                    <div class="list-item" onclick="viewChannel('${c.id}')">
                         <img src="${c.avatar_url || DEFAULT_AVATAR}" class="avatar-sm">
-                        <div><b>${c.name}</b><br><span class="text-sub" style="font-size:10px;">${c.type}</span></div>
+                        <div><b>${c.name}</b></div>
                     </div>`).join('');
             } else {
-                document.getElementById('subs-channels').innerHTML = '<div class="text-sub" style="padding: 10px;">Ви ще не підписані на канали.</div>';
+                document.getElementById('subs-channels').innerHTML = '<div style="padding:5px;">Пусто.</div>';
             }
         }
     </script>
