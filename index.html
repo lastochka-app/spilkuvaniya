@@ -366,6 +366,7 @@
             
             <div class="glass-panel card" style="padding: 6px;">
                 <button class="btn-nav" onclick="loadFeed()">Головна</button>
+                <button class="btn-nav" onclick="loadSubscriptionsTab()">Мої підписки</button>
                 <button class="btn-nav" onclick="showVideos()">Відеозаписи</button>
                 <button class="btn-nav" onclick="showChannelsList()">Канали</button>
                 <button class="btn-nav" onclick="showMailClient()">Пошта</button> 
@@ -421,7 +422,8 @@
 
                 <div id="wall-input-area" class="glass-panel card" style="background: #F0F4F9;">
                     <span style="font-weight: bold; margin-bottom: 6px; display: block; color: var(--primary);">Що у вас нового?</span>
-                    <textarea id="post-text" rows="3" style="margin-bottom: 8px; resize: vertical;"></textarea>
+                    <textarea id="post-text" rows="3" style="margin-bottom: 8px; resize: vertical;" placeholder="Напишіть текст..."></textarea>
+                    <input type="text" id="post-img-url" placeholder="URL картинки (необов'язково)" style="margin-bottom: 8px;">
                     <div style="display: flex; justify-content: flex-end;">
                         <button class="btn-primary" onclick="createPost()" style="width: auto; padding: 6px 16px;">Опублікувати</button>
                     </div>
@@ -509,11 +511,13 @@
             const savedBg = localStorage.getItem('custom_bg');
             if (savedBg) { document.body.style.backgroundImage = `url('${savedBg}')`; document.body.style.backgroundSize = 'auto'; document.body.style.backgroundRepeat = 'repeat'; }
             
+            // Supabase Auth перевірка сесії
             const { data: { session } } = await _supabase.auth.getSession();
             if (session) {
                 await loadCurrentUserProfile(session.user.id);
             }
 
+            // Слухач змін автентифікації
             _supabase.auth.onAuthStateChange(async (event, session) => {
                 if (event === 'SIGNED_IN' && session) {
                     await loadCurrentUserProfile(session.user.id);
@@ -586,21 +590,27 @@
             const nick = document.getElementById('my-nick-input').value.trim();
             let av = document.getElementById('my-avatar-input').value.trim() || DEFAULT_AVATAR;
 
-            if (!email || !pass) { alert("Введіть email та пароль!"); return; }
+            if (!email || !pass) {
+                alert("Введіть email та пароль!"); return;
+            }
 
             if (mode === 'reg') {
                 if (!nick) { alert("Помилка: Нікнейм обов'язковий для реєстрації!"); return; }
                 const { data, error } = await _supabase.auth.signUp({
-                    email: email, password: pass, options: { data: { nickname: nick } }
+                    email: email,
+                    password: pass,
+                    options: { data: { nickname: nick } }
                 });
                 if (error) { alert("Помилка: " + error.message); return; }
                 if (data.user) {
-                    // Використовуємо upsert для гарантованого створення рядка
-                    await _supabase.from('profiles').upsert({ id: data.user.id, nickname: nick, avatar_url: av });
+                    await _supabase.from('profiles').update({ avatar_url: av }).eq('id', data.user.id);
                     alert("Реєстрація успішна! Увійдіть з вашими даними.");
                 }
             } else if (mode === 'login') {
-                const { error } = await _supabase.auth.signInWithPassword({ email: email, password: pass });
+                const { error } = await _supabase.auth.signInWithPassword({
+                    email: email,
+                    password: pass
+                });
                 if (error) alert("Помилка входу! Перевірте дані: " + error.message);
             }
         }
@@ -659,9 +669,17 @@
         async function createPost() {
             if (myRestrictPosts) { alert("Адміністрація обмежила вам можливість публікувати пости."); return; }
             const t = document.getElementById('post-text').value.trim();
-            if(!t) return;
-            await _supabase.from('posts').insert([{ author_id: myId, text: t, likes: 0, liked_by: [] }]);
-            document.getElementById('post-text').value = ""; viewProfile(myId);
+            const img = document.getElementById('post-img-url').value.trim();
+            
+            if(!t && !img) return;
+            
+            const finalContent = img ? `${t}\n\n${img}` : t;
+            
+            await _supabase.from('posts').insert([{ author_id: myId, text: finalContent, likes: 0, liked_by: [] }]);
+            
+            document.getElementById('post-text').value = "";
+            document.getElementById('post-img-url').value = "";
+            viewProfile(myId);
         }
 
         async function loadPosts(userId) {
@@ -1066,14 +1084,14 @@
         function createGroup() { if (myRestrictGroups) { alert("Вам обмежена можливість взаємодії з групами."); return; } const n = prompt("Назва групи:"); if(n) _supabase.from('groups').insert([{name:n}]).then(loadGroups); }
         function startGroupChat(id, name) { if (myRestrictGroups) { alert("Доступ до груп заблоковано."); return; } currentChatId = "group_" + id; document.getElementById('profile-screen').style.display = 'none'; document.getElementById('chat-window').style.display = 'flex'; document.getElementById('chat-title').innerText = name; switchTab('col-main'); loadMessages(); }
 
-        async function toggleLike(postId, authorId, isFeed = false) { const { data: post } = await _supabase.from('posts').select('likes, liked_by').eq('id', postId).single(); if (!post) return; let likedBy = post.liked_by || []; let likesCount = parseInt(post.likes) || 0; const uid = String(myId); if (likedBy.includes(uid)) { likedBy = likedBy.filter(i => i !== uid); likesCount = Math.max(0, likesCount - 1); } else { likedBy.push(uid); likesCount++; } await _supabase.from('posts').update({ likes: likesCount, liked_by: likedBy }).eq('id', postId); if(isFeed) loadFeed(); else if(authorId) loadPosts(authorId); }
+        async function toggleLike(postId, authorId, isFeed = false) { const { data: post } = await _supabase.from('posts').select('likes, liked_by').eq('id', postId).single(); if (!post) return; let likedBy = post.liked_by || []; let likesCount = parseInt(post.likes) || 0; const uid = String(myId); if (likedBy.includes(uid)) { likedBy = likedBy.filter(i => i !== uid); likesCount = Math.max(0, likesCount - 1); } else { likedBy.push(uid); likesCount++; } await _supabase.from('posts').update({ likes: likesCount, liked_by: likedBy }).eq('id', postId); if(isFeed) loadFeed(); else loadPosts(authorId); }
         async function loadInbox() { const { data } = await _supabase.from('messages').select('*').order('created_at', { ascending: false }).limit(40); if(!data) return; const res = []; const seen = new Set(); for(let m of data) { if(m.sender_id === myId) continue; if(m.chat_id.includes(myId) || m.chat_id.startsWith("group_")) { if(!seen.has(m.chat_id)) { seen.add(m.chat_id); res.push(m); } } if(res.length >= 5) break; } document.getElementById('inbox-list').innerHTML = res.map(m => `<div class="list-item" style="border: 1px solid #CCC; background: #F9F9F9;" onclick="openChatById('${m.chat_id}')"><div style="display:flex; flex-direction:column;"><b>${m.chat_id.startsWith('group_')?'Група':'Нове повідомлення'}:</b> <span class="text-sub">${m.text.substring(0,35)}</span></div></div>`).join(''); }
         async function openChatById(chatId) { if(chatId.startsWith("group_")) { const gid = chatId.replace("group_", ""); const {data} = await _supabase.from('groups').select('name').eq('id', gid).single(); if(data) startGroupChat(gid, data.name); } else { const tid = chatId.split('_').find(x => x !== myId); const {data} = await _supabase.from('profiles').select('nickname').eq('id', tid).single(); if(data) openPrivate(tid, data.nickname); } }
         function showAbout() { clearMainArea(); document.getElementById('wall-posts').innerHTML = `<div class="tab-header">Про проєкт</div><div class="glass-panel card"><h2 style="color:var(--link-color); margin-bottom:10px;">${globalAppInfo.name}</h2><p class="text-sub" style="margin-bottom:15px;">Всі права захищено (с)</p><p style="line-height:1.4; white-space: pre-wrap;">${globalAppInfo.desc}</p></div>`; }
         function showWall() { viewProfile(myId); }
         function goToId() { const i = document.getElementById('target-id-input').value.trim(); if(i) viewProfile(i); }
         function sendImagePrompt() { const url = prompt("Встав URL картинки:"); if(url) { document.getElementById('msg-input').value = url; sendMessage(); } }
-        async function deletePost(postId, authorId) { if(!confirm("Видалити цей пост?")) return; await _supabase.from('posts').delete().eq('id', postId); if(authorId) viewProfile(authorId); else loadFeed(); }
+        async function deletePost(postId, authorId) { if(!confirm("Видалити цей пост?")) return; if(myIsAdmin) await _supabase.from('posts').delete().eq('id', postId); else await _supabase.from('posts').delete().eq('id', postId).eq('author_id', myId); if(authorId) viewProfile(authorId); else loadFeed(); }
         async function checkFollowStatus(id) { const { data } = await _supabase.from('follows').select('*').eq('follower_id', myId).eq('following_id', id).single(); const btn = document.getElementById('follow-btn'); btn.innerText = data ? "Відписатися" : "Підписатися"; btn.className = data ? "btn-secondary" : "btn-primary"; btn.onclick = () => toggleFollow(id, !!data); }
         async function toggleFollow(id, isF) { if(isF) await _supabase.from('follows').delete().eq('follower_id', myId).eq('following_id', id); else await _supabase.from('follows').insert([{follower_id:myId, following_id:id}]); viewProfile(id); }
         async function updateFollowCounts(id) { const { count: f1 } = await _supabase.from('follows').select('*', { count: 'exact' }).eq('following_id', id); const { count: f2 } = await _supabase.from('follows').select('*', { count: 'exact' }).eq('follower_id', id); document.getElementById('count-followers').innerText = f1 || 0; document.getElementById('count-following').innerText = f2 || 0; }
@@ -1212,26 +1230,16 @@
             const listEl = document.getElementById('inbox-emails-list'); if (!myInternalEmail) return;
             const { data: emails } = await _supabase.from('social_mail').select('*').eq('receiver_email', myInternalEmail).order('created_at', { ascending: false });
             if (!emails || emails.length === 0) { listEl.innerHTML = `<div style="padding:12px; color:var(--text-sub); text-align:center;">Порожня скринька.</div>`; return; }
-            listEl.innerHTML = emails.map(mail => `<div class="list-item" style="flex-direction: column; align-items: flex-start; background: ${mail.is_read?'#FFFFFF':'#FFFBE6'}; border: ${mail.is_read?'1px solid #CCC':'1px solid #F5E8A3'}; padding: 8px; margin-bottom: 4px; cursor: default;"><div style="display:flex; justify-content:space-between; width:100%; border-bottom: 1px dashed #CCC; padding-bottom:4px; margin-bottom:6px; font-size:10px; color:var(--text-sub);"><span><b>Від:</b> ${escapeHtml(mail.sender_email)}</span><span>${new Date(mail.created_at).toLocaleString()}</span></div><div style="font-weight: bold; font-size: 11px; margin-bottom: 4px; color: var(--link-color);">Тема: ${escapeHtml(mail.subject)}</div><div style="font-size: 11px; line-height: 1.4; white-space: pre-wrap; width: 100%; word-wrap: break-word; color:#000;">${escapeHtml(mail.body)}</div>${!mail.is_read ? `<div style="text-align: right; width: 100%; margin-top: 6px;"><button class="btn-secondary" style="width:auto; font-size:9px; padding:2px 6px;" onclick="markEmailAsRead('${mail.id}')">Читати</button></div>` : ''}</div>`).join('');
+            listEl.innerHTML = emails.map(mail => `<div class="list-item" style="flex-direction: column; align-items: flex-start; background: ${mail.is_read?'#FFFFFF':'#FFFBE6'}; border: ${mail.is_read?'1px solid #CCC':'1px solid #F5E8A3'}; padding: 8px; margin-bottom: 4px; cursor: default;"><div style="display:flex; justify-content:space-between; width:100%; border-bottom: 1px dashed #CCC; padding-bottom:4px; margin-bottom:6px; font-size:10px; color:var(--text-sub);"><span><b>Від:</b> ${escapeHtml(mail.sender_email)}</span><span>${new Date(mail.created_at).toLocaleString()}</span></div><div style="font-weight: bold; font-size: 11px; margin-bottom: 4px; color: var(--link-color);">Тема: ${escapeHtml(mail.subject)}</div><div style="font-size: 11px; line-height: 1.4; white-space: pre-wrap; width: 100%; word-wrap: break-word; color:#000;">${escapeHtml(mail.body)}</div>${!mail.is_read ? `<div style="text-align: right; width: 100%; margin-top: 6px;"><button class="btn-secondary" style="width:auto; font-size:9px; padding:2px 6px;" onclick="markEmailAsRead(${mail.id})">Читати</button></div>` : ''}</div>`).join('');
         }
         async function markEmailAsRead(mailId) { await _supabase.from('social_mail').update({ is_read: true }).eq('id', mailId); loadInboxEmails(); }
         function escapeHtml(text) { if (!text) return ''; return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;"); }
 
         function showChannelsList() {
             clearMainArea(); const wall = document.getElementById('wall-posts');
-            wall.innerHTML = `<div class="tab-header">Публічні канали</div><div class="flex-row" style="margin-bottom: 12px;"><input type="text" id="channel-search-query" placeholder="Пошук каналів..." style="margin:0;" onkeyup="if(event.keyCode===13) searchChannels()"><button class="btn-secondary" style="width:auto; min-width:80px;" onclick="searchChannels()">Знайти</button></div><button class="btn-dashed" style="width: 100%; margin-bottom: 12px; padding: 10px;" onclick="showChannelCreationForm()">+ Створити свій канал</button><div id="channels-feed" class="scroll-area">Завантаження...</div>`;
+            wall.innerHTML = `<div class="tab-header">Публічні канали</div><div class="flex-row" style="margin-bottom: 12px;"><input type="text" id="channel-search-query" placeholder="Пошук каналів..." style="margin:0;"><button class="btn-secondary" style="width:auto; min-width:80px;" onclick="searchChannels()">Знайти</button></div><button class="btn-dashed" style="width: 100%; margin-bottom: 12px; padding: 10px;" onclick="showChannelCreationForm()">+ Створити свій канал</button><div id="channels-feed" class="scroll-area">Завантаження...</div>`;
             loadChannels();
         }
-
-        // НОВЕ: Робочий пошук каналів
-        async function searchChannels() {
-            const query = document.getElementById('channel-search-query').value.trim();
-            const feed = document.getElementById('channels-feed');
-            if(!query) return loadChannels();
-            const { data: channels } = await _supabase.from('channels').select('*').ilike('name', `%${query}%`).order('created_at', { ascending: false });
-            renderChannelsFeed(channels, feed);
-        }
-
         function showChannelCreationForm() {
             const wall = document.getElementById('wall-posts');
             wall.innerHTML = `<div class="tab-header">Створення каналу</div><div class="glass-panel card" style="background: #F4F8FC;"><label class="form-label">Назва каналу</label><input type="text" id="chan-name"><label class="form-label">Опис</label><textarea id="chan-desc" rows="2"></textarea><label class="form-label">Тип каналу</label><select id="chan-type"><option value="mixed">Паблік</option><option value="blog">Тільки Блог</option><option value="video">Тільки Відео</option></select><label class="form-label">URL Аватарки</label><input type="text" id="chan-avatar"><label class="form-label">URL Банера</label><input type="text" id="chan-banner"><label class="form-label">Приватність</label><select id="chan-private" onchange="toggleChanPrivateFields()"><option value="false">Для всіх</option><option value="true">Приватний</option></select><input type="text" id="chan-viewers" placeholder="UUID глядачів через кому" style="display:none; margin-top:5px;"><label class="form-label mt-15">Хто може публікувати пости?</label><input type="text" id="chan-posters" placeholder="UUID редакторів через кому"><button class="btn-primary mt-15" onclick="createChannel()">Створити канал</button><button class="btn-secondary mt-15" onclick="showChannelsList()">Скасувати</button></div>`;
@@ -1251,108 +1259,150 @@
             feed.innerHTML = channels.map(c => { if (c.is_private && c.owner_id !== String(myId) && !(c.allowed_viewers || []).includes(String(myId)) && !myIsAdmin) return ''; return `<div class="list-item glass-panel card" style="margin-bottom: 10px; cursor: pointer; align-items: flex-start;" onclick="viewChannel('${c.id}')"><img src="${c.avatar_url}" class="avatar-md"><div><b style="font-size: 13px;">${c.name}</b> <span class="channel-badge">${c.type}</span><br><span class="text-sub" style="font-size: 11px;">${c.description ? c.description.substring(0, 50) + '...' : 'Без опису'}</span></div></div>`; }).join('');
         }
         
-        // НОВЕ: Повноцінний перегляд каналу та стрічка постів
         async function viewChannel(channelId) {
-            clearMainArea(); const wall = document.getElementById('wall-posts');
-            const { data: channel } = await _supabase.from('channels').select('*').eq('id', channelId).single(); if (!channel) return;
-            const { data: subData } = await _supabase.from('channel_subscriptions').select('*').eq('user_id', String(myId)).eq('channel_id', channelId).single(); const isSubbed = !!subData;
+            clearMainArea(); 
+            const wall = document.getElementById('wall-posts');
+            const { data: channel } = await _supabase.from('channels').select('*').eq('id', channelId).single(); 
+            if (!channel) return;
             
-            const canPost = (channel.owner_id === String(myId) || (channel.allowed_posters || []).includes(String(myId)) || myIsAdmin);
+            const { data: subData } = await _supabase.from('channel_subscriptions').select('*').eq('user_id', String(myId)).eq('channel_id', channelId).single(); 
+            const isSubbed = !!subData;
 
-            let html = `
+            // Проверяем, может ли текущий пользователь публиковать контент в этот канал
+            const canPost = (channel.owner_id === String(myId) || (channel.allowed_posters && channel.allowed_posters.includes(String(myId))) || myIsAdmin);
+
+            wall.innerHTML = `
                 <div class="glass-panel card" style="padding: 0; overflow: visible;">
                     <img src="${channel.banner_url || DEFAULT_AVATAR}" class="channel-banner">
                     <div class="channel-header-info">
                         <img src="${channel.avatar_url}" class="channel-avatar">
                         <h2 style="margin-bottom: 5px; color: var(--primary);">${channel.name}</h2>
+                        <p class="text-sub" style="margin-bottom: 10px;">${channel.description || ''}</p>
                         <button class="${isSubbed ? 'btn-secondary' : 'btn-primary'}" style="width:auto;" onclick="toggleChannelSub('${channel.id}', ${isSubbed})">${isSubbed ? 'Відписатися' : 'Підписатися'}</button>
                     </div>
-                </div>`;
-            
-            if (canPost) {
-                html += `
+                </div>
+                
+                ${canPost ? `
                 <div class="glass-panel card" style="background: #F0F4F9;">
-                    <span style="font-weight: bold; margin-bottom: 6px; display: block; color: var(--primary);">Новий запис у канал</span>
-                    <textarea id="chan-post-text" rows="3" style="margin-bottom: 8px; resize: vertical;"></textarea>
-                    <div style="display: flex; justify-content: flex-end;">
-                        <button class="btn-primary" onclick="createChannelPost('${channel.id}')" style="width: auto; padding: 6px 16px;">Опублікувати</button>
-                    </div>
-                </div>`;
+                    <span class="section-title">Опублікувати в канал</span>
+                    <textarea id="chan-post-text" rows="2" placeholder="Текст поста або назва відео..."></textarea>
+                    <input type="text" id="chan-post-img" placeholder="URL картинки (необов'язково)">
+                    <input type="text" id="chan-post-video" placeholder="URL відео .mp4/.webm (необов'язково)">
+                    <button class="btn-primary mt-15" onclick="createChannelPost('${channel.id}')">Опублікувати</button>
+                </div>` : ''}
+                
+                <div id="channel-feed" class="scroll-area">Завантаження стрічки...</div>
+            `;
+            
+            loadChannelPosts(channel.id);
+        }
+
+        async function createChannelPost(channelId) {
+            const text = document.getElementById('chan-post-text').value.trim();
+            const img = document.getElementById('chan-post-img').value.trim();
+            const video = document.getElementById('chan-post-video').value.trim();
+
+            if (!text && !img && !video) return;
+
+            // Используем UUID канала в качестве author_id для таблиц posts и videos
+            if (video) {
+                await _supabase.from('videos').insert([{ author_id: channelId, title: text || "Відео каналу", url: video, likes: 0, liked_by: [] }]);
+            } else {
+                const finalContent = img ? `${text}\n\n${img}` : text;
+                await _supabase.from('posts').insert([{ author_id: channelId, text: finalContent, likes: 0, liked_by: [] }]);
+            }
+            viewChannel(channelId);
+        }
+
+        async function loadChannelPosts(channelId) {
+            const feed = document.getElementById('channel-feed');
+            feed.innerHTML = '';
+
+            // Подтягиваем и посты, и видео канала
+            const { data: posts } = await _supabase.from('posts').select('*').eq('author_id', channelId);
+            const { data: videos } = await _supabase.from('videos').select('*').eq('author_id', channelId);
+
+            let combined = [...(posts || []), ...(videos || [])];
+            combined.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+            if (combined.length === 0) {
+                feed.innerHTML = '<div class="text-sub">У цьому каналі ще немає записів.</div>';
+                return;
             }
 
-            html += `<div id="channel-posts-feed" class="scroll-area"></div>`;
-            wall.innerHTML = html;
-            loadChannelPosts(channelId);
-        }
+            combined.forEach(item => {
+                const isVideo = item.url !== undefined; 
+                const isLiked = (item.liked_by || []).includes(String(myId));
+                const div = document.createElement('div');
+                div.className = 'post';
 
-        // НОВЕ: Публікація в канал
-        async function createChannelPost(channelId) {
-            const t = document.getElementById('chan-post-text').value.trim();
-            if(!t) return;
-            await _supabase.from('channel_posts').insert([{ channel_id: channelId, author_id: String(myId), text: t }]);
-            document.getElementById('chan-post-text').value = ""; 
-            loadChannelPosts(channelId);
-        }
-
-        // НОВЕ: Завантаження стрічки каналу
-        async function loadChannelPosts(channelId) {
-            const { data: posts } = await _supabase.from('channel_posts').select('*').eq('channel_id', channelId).order('created_at', { ascending: false });
-            const feed = document.getElementById('channel-posts-feed');
-            feed.innerHTML = '';
-            if(posts && posts.length > 0) {
-                posts.forEach(p => {
-                    const isLiked = (p.liked_by || []).includes(String(myId));
-                    const canDelete = (p.author_id === String(myId) || myIsAdmin);
-                    const div = document.createElement('div');
-                    div.className = 'post';
+                if (isVideo) {
                     div.innerHTML = `
-                        <div class="post-header">
-                            <span class="text-sub">${new Date(p.created_at).toLocaleDateString()} ${new Date(p.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
-                            ${canDelete ? `<button class="btn-text btn-delete" style="color:var(--danger)" onclick="deleteChannelPost('${p.id}', '${channelId}')">[x] Видалити</button>` : ''}
+                        <div class="post-header"><span><b>${item.title}</b></span></div>
+                        <div class="post-body" style="padding:0; background:#000; text-align:center;">
+                            <video controls style="width:100%; max-height:400px;" preload="metadata"><source src="${item.url}" type="video/mp4"></video>
                         </div>
-                        <div class="post-body">${parseContent(p.text)}</div>
                         <div class="post-footer">
-                            <button onclick="toggleChannelPostLike('${p.id}', '${channelId}')" class="btn-like ${isLiked?'active':''}">&hearts; (${p.likes || 0})</button>
+                            <button onclick="toggleVideoLike('${item.id}'); setTimeout(() => loadChannelPosts('${channelId}'), 500);" class="btn-like ${isLiked ? 'active' : ''}">&hearts; (${item.likes || 0})</button>
                         </div>
                     `;
-                    feed.appendChild(div);
-                });
-            } else {
-                feed.innerHTML = '<div class="text-sub" style="padding: 10px;">В цьому каналі ще немає записів.</div>';
-            }
-        }
-
-        // НОВЕ: Видалення поста з каналу
-        async function deleteChannelPost(postId, channelId) {
-            if(!confirm("Видалити цей запис?")) return;
-            await _supabase.from('channel_posts').delete().eq('id', postId);
-            loadChannelPosts(channelId);
-        }
-
-        // НОВЕ: Лайки в каналах
-        async function toggleChannelPostLike(postId, channelId) { 
-            const { data: post } = await _supabase.from('channel_posts').select('likes, liked_by').eq('id', postId).single(); 
-            if (!post) return; 
-            let likedBy = post.liked_by || []; 
-            let likesCount = parseInt(post.likes) || 0; 
-            const uid = String(myId); 
-            if (likedBy.includes(uid)) { 
-                likedBy = likedBy.filter(i => i !== uid); 
-                likesCount = Math.max(0, likesCount - 1); 
-            } else { 
-                likedBy.push(uid); 
-                likesCount++; 
-            } 
-            await _supabase.from('channel_posts').update({ likes: likesCount, liked_by: likedBy }).eq('id', postId); 
-            loadChannelPosts(channelId); 
+                } else {
+                    div.innerHTML = `
+                        <div class="post-header"><span class="text-sub">${new Date(item.created_at).toLocaleString()}</span></div>
+                        <div class="post-body">${parseContent(item.text)}</div>
+                        <div class="post-footer">
+                            <button onclick="toggleLike('${item.id}', '${channelId}', false); setTimeout(() => loadChannelPosts('${channelId}'), 500);" class="btn-like ${isLiked ? 'active' : ''}">&hearts; (${item.likes || 0})</button>
+                        </div>
+                    `;
+                }
+                feed.appendChild(div);
+            });
         }
 
         async function toggleChannelSub(channelId, currentlySubbed) { if (currentlySubbed) await _supabase.from('channel_subscriptions').delete().eq('user_id', String(myId)).eq('channel_id', channelId); else await _supabase.from('channel_subscriptions').insert([{ user_id: String(myId), channel_id: channelId }]); viewChannel(channelId); }
+        
         async function loadRecommendedChannels() {
             const list = document.getElementById('recommended-channels-list'); if (!list) return;
             const { data: channels } = await _supabase.from('channels').select('*').eq('is_private', false).limit(5);
             if (!channels || channels.length === 0) { list.innerHTML = '<span class="text-sub">Немає каналів для рекомендації.</span>'; return; }
             list.innerHTML = channels.map(c => `<div class="list-item" onclick="viewChannel('${c.id}')" style="align-items: center;"><img src="${c.avatar_url}" class="avatar-sm" style="border-radius:3px;"><div style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:11px;"><b>${c.name}</b></div></div>`).join('');
+        }
+
+        async function loadSubscriptionsTab() {
+            clearMainArea();
+            const wall = document.getElementById('wall-posts');
+            wall.innerHTML = '<div class="tab-header">Мої підписки</div>';
+
+            wall.innerHTML += '<span class="section-title">Користувачі</span><div id="subs-users" class="scroll-area" style="max-height: 250px; margin-bottom: 15px;">Завантаження...</div>';
+            wall.innerHTML += '<span class="section-title">Канали</span><div id="subs-channels" class="scroll-area" style="max-height: 250px;">Завантаження...</div>';
+
+            // 1. Загрузка подписок на пользователей
+            const { data: userSubs } = await _supabase.from('follows').select('following_id').eq('follower_id', String(myId));
+            if (userSubs && userSubs.length > 0) {
+                const ids = userSubs.map(s => s.following_id);
+                const { data: users } = await _supabase.from('profiles').select('*').in('id', ids);
+                document.getElementById('subs-users').innerHTML = users.map(u => `
+                    <div class="list-item glass-panel card" style="margin-bottom: 8px; cursor: pointer;" onclick="viewProfile('${u.id}')">
+                        <img src="${u.avatar_url || DEFAULT_AVATAR}" class="avatar-sm">
+                        <div><b>${u.nickname}</b></div>
+                    </div>`).join('');
+            } else {
+                document.getElementById('subs-users').innerHTML = '<div class="text-sub" style="padding: 10px;">Ви ще ні на кого не підписані.</div>';
+            }
+
+            // 2. Загрузка подписок на каналы
+            const { data: chanSubs } = await _supabase.from('channel_subscriptions').select('channel_id').eq('user_id', String(myId));
+            if (chanSubs && chanSubs.length > 0) {
+                const cids = chanSubs.map(s => s.channel_id);
+                const { data: channels } = await _supabase.from('channels').select('*').in('id', cids);
+                document.getElementById('subs-channels').innerHTML = channels.map(c => `
+                    <div class="list-item glass-panel card" style="margin-bottom: 8px; cursor: pointer;" onclick="viewChannel('${c.id}')">
+                        <img src="${c.avatar_url || DEFAULT_AVATAR}" class="avatar-sm">
+                        <div><b>${c.name}</b><br><span class="text-sub" style="font-size:10px;">${c.type}</span></div>
+                    </div>`).join('');
+            } else {
+                document.getElementById('subs-channels').innerHTML = '<div class="text-sub" style="padding: 10px;">Ви ще не підписані на канали.</div>';
+            }
         }
     </script>
 </body>
