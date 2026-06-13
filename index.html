@@ -1978,6 +1978,80 @@
                 </div>
             `).join('');
         }
+            async function loadRecommendedChannels() {
+            const list = document.getElementById('recommended-channels-list');
+            if (!list) return;
+
+            // Витягуємо 5 публічних каналів
+            const { data: channels } = await _supabase.from('channels').select('*').eq('is_private', false).limit(5);
+            
+            if (!channels || channels.length === 0) { 
+                list.innerHTML = '<span class="text-sub">Немає каналів для рекомендації.</span>'; 
+                return; 
+            }
+            
+            list.innerHTML = channels.map(c => `
+                <div class="list-item" onclick="viewChannel('${c.id}')" style="align-items: center;">
+                    <img src="${c.avatar_url}" class="avatar-sm" style="border-radius:3px;">
+                    <div style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:11px;">
+                        <b>${c.name}</b>
+                    </div>
+                </div>
+            `).join('');
+        }
+    </script>
+
+    <script>
+        // 1. Очищаємо консоль при завантаженні сторінки
+        console.clear();
+
+        // 2. Виводимо велике попередження (текст залишив українською під інтерфейс)
+        console.log(
+            "%cЗУПИНИСЬ!",
+            "color: red; font-size: 50px; font-weight: bold; text-shadow: 2px 2px 0 #000; font-family: sans-serif;"
+        );
+        console.log(
+            "%cЦя функція браузера призначена для розробників. Якщо хтось сказав вам скопіювати та вставити сюди код, щоб увімкнути якусь функцію або «зламати» чужий акаунт, це шахрайство. Виконання стороннього коду дасть зловмисникам доступ до вашого акаунту в Bigion.",
+            "color: black; font-size: 16px; font-family: sans-serif;"
+        );
+
+        // 3. Блокуємо стандартні методи консолі, щоб приховати ваші логі
+        const noop = () => {};
+        window.console.log = noop;
+        window.console.warn = noop;
+        window.console.info = noop;
+        window.console.error = noop;
+        window.console.dir = noop;
+
+        // 4. Пастка для розробників (ускладнює використання консолі)
+        // Цей код буде постійно викликати паузу (debugger), якщо відкрито DevTools
+        setInterval(function() {
+            const before = new Date().getTime();
+            debugger;
+            const after = new Date().getTime();
+            if (after - before > 100) {
+                // Якщо скрипт зупинився на debugger, значить консоль відкрита
+                // Можна розкоментувати рядок нижче, щоб сторінка ставала білою при відкритті консолі
+                // document.body.innerHTML = "<h1 style='text-align:center; margin-top:20%; font-family:sans-serif;'>Будь ласка, закрийте панель розробника.</h1>";
+            }
+        }, 1000);
+
+        // 5. Блокуємо клік правою кнопкою миші та гарячі клавіші для відкриття консолі (F12, Ctrl+Shift+I)
+        document.addEventListener('contextmenu', event => event.preventDefault());
+        document.onkeydown = function(e) {
+            if (e.keyCode == 123) { // F12
+                return false;
+            }
+            if (e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)) { // Ctrl+Shift+I
+                return false;
+            }
+            if (e.ctrlKey && e.shiftKey && e.keyCode == 'J'.charCodeAt(0)) { // Ctrl+Shift+J
+                return false;
+            }
+            if (e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) { // Ctrl+U (View Source)
+                return false;
+            }
+        };
     </script>
 </body>
 </html>
