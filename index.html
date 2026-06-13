@@ -205,7 +205,7 @@
         .post-footer { padding: 6px 10px; background: #F4F8FC; display: flex; align-items: center; gap: 8px; border-top: 1px solid #D8E2F0; }
         .img-fluid { width: 100%; max-height: 420px; object-fit: cover; border: 1px solid #999; margin-top: 8px; padding: 4px; background:#FFF; box-shadow: 2px 2px 5px rgba(0,0,0,0.1); }
         
-        .btn-like { width: auto; padding: 3px 8px; font-weight: bold; font-size: 10px; }
+        .btn-like { width: auto; padding: 3px 8px; font-weight: bold; font-size: 10px; transition: all 0.2s ease;}
         .btn-like.active { background: #D8E2F0; border-color: #8FA6C3; color: #D00000; box-shadow: inset 0 1px 3px rgba(0,0,0,0.2); }
         .btn-delete { width: auto; padding: 0; font-size: 10px; font-weight: normal; }
 
@@ -699,7 +699,7 @@
                         </div>
                         <div class="post-body">${parseContent(p.text)}</div>
                         <div class="post-footer">
-                            <button onclick="toggleLike('${p.id}', '${userId}')" class="btn-like ${isLiked?'active':''}">&hearts; (${p.likes || 0})</button>
+                            <button onclick="toggleLike('${p.id}', this)" class="btn-like ${isLiked?'active':''}">&hearts; (<span class="like-count">${p.likes || 0}</span>)</button>
                             <button onclick="toggleComments('${p.id}')" class="btn-secondary" style="width:auto; flex:1;">Коментарі</button>
                         </div>
                         <div id="comments-box-${p.id}" style="display:none; padding:12px; border-top:1px solid #EEE; background:#FFF;">
@@ -733,7 +733,7 @@
                         </div>
                         <div class="post-body">${parseContent(p.text)}</div>
                         <div class="post-footer">
-                            <button onclick="toggleLike('${p.id}', null, true)" class="btn-like ${isLiked?'active':''}">&hearts; (${p.likes || 0})</button>
+                            <button onclick="toggleLike('${p.id}', this)" class="btn-like ${isLiked?'active':''}">&hearts; (<span class="like-count">${p.likes || 0}</span>)</button>
                             <button onclick="toggleComments('${p.id}')" class="btn-secondary" style="width:auto; flex:1;">Коментарі</button>
                         </div>
                         <div id="comments-box-${p.id}" style="display:none; padding:12px; border-top:1px solid #EEE; background:#FFF;">
@@ -1084,7 +1084,43 @@
         function createGroup() { if (myRestrictGroups) { alert("Вам обмежена можливість взаємодії з групами."); return; } const n = prompt("Назва групи:"); if(n) _supabase.from('groups').insert([{name:n}]).then(loadGroups); }
         function startGroupChat(id, name) { if (myRestrictGroups) { alert("Доступ до груп заблоковано."); return; } currentChatId = "group_" + id; document.getElementById('profile-screen').style.display = 'none'; document.getElementById('chat-window').style.display = 'flex'; document.getElementById('chat-title').innerText = name; switchTab('col-main'); loadMessages(); }
 
-        async function toggleLike(postId, authorId, isFeed = false) { const { data: post } = await _supabase.from('posts').select('likes, liked_by').eq('id', postId).single(); if (!post) return; let likedBy = post.liked_by || []; let likesCount = parseInt(post.likes) || 0; const uid = String(myId); if (likedBy.includes(uid)) { likedBy = likedBy.filter(i => i !== uid); likesCount = Math.max(0, likesCount - 1); } else { likedBy.push(uid); likesCount++; } await _supabase.from('posts').update({ likes: likesCount, liked_by: likedBy }).eq('id', postId); if(isFeed) loadFeed(); else loadPosts(authorId); }
+        // ОПТИМІЗОВАНА ФУНКЦІЯ ЛАЙКІВ ДЛЯ ПОСТІВ
+        async function toggleLike(postId, btnElement) { 
+            if (!myId) return alert("Авторизуйтесь!");
+            
+            const countSpan = btnElement.querySelector('.like-count');
+            let currentCount = parseInt(countSpan.innerText) || 0;
+            const isLiked = btnElement.classList.contains('active');
+
+            // Оптимістичний UI: відразу міняємо інтерфейс без очікування сервера
+            if (isLiked) {
+                btnElement.classList.remove('active');
+                countSpan.innerText = Math.max(0, currentCount - 1);
+            } else {
+                btnElement.classList.add('active');
+                countSpan.innerText = currentCount + 1;
+            }
+
+            // Фонове оновлення у Supabase
+            const { data: post } = await _supabase.from('posts').select('likes, liked_by').eq('id', postId).maybeSingle(); 
+            if (!post) return; 
+            
+            let likedBy = post.liked_by || []; 
+            let likesCount = parseInt(post.likes) || 0; 
+            const uid = String(myId); 
+            
+            if (isLiked) { 
+                likedBy = likedBy.filter(i => i !== uid); 
+                likesCount = Math.max(0, likesCount - 1); 
+            } else { 
+                if (!likedBy.includes(uid)) {
+                    likedBy.push(uid); 
+                    likesCount++; 
+                }
+            } 
+            await _supabase.from('posts').update({ likes: likesCount, liked_by: likedBy }).eq('id', postId); 
+        }
+
         async function loadInbox() { const { data } = await _supabase.from('messages').select('*').order('created_at', { ascending: false }).limit(40); if(!data) return; const res = []; const seen = new Set(); for(let m of data) { if(m.sender_id === myId) continue; if(m.chat_id.includes(myId) || m.chat_id.startsWith("group_")) { if(!seen.has(m.chat_id)) { seen.add(m.chat_id); res.push(m); } } if(res.length >= 5) break; } document.getElementById('inbox-list').innerHTML = res.map(m => `<div class="list-item" style="border: 1px solid #CCC; background: #F9F9F9;" onclick="openChatById('${m.chat_id}')"><div style="display:flex; flex-direction:column;"><b>${m.chat_id.startsWith('group_')?'Група':'Нове повідомлення'}:</b> <span class="text-sub">${m.text.substring(0,35)}</span></div></div>`).join(''); }
         async function openChatById(chatId) { if(chatId.startsWith("group_")) { const gid = chatId.replace("group_", ""); const {data} = await _supabase.from('groups').select('name').eq('id', gid).single(); if(data) startGroupChat(gid, data.name); } else { const tid = chatId.split('_').find(x => x !== myId); const {data} = await _supabase.from('profiles').select('nickname').eq('id', tid).single(); if(data) openPrivate(tid, data.nickname); } }
         function showAbout() { clearMainArea(); document.getElementById('wall-posts').innerHTML = `<div class="tab-header">Про проєкт</div><div class="glass-panel card"><h2 style="color:var(--link-color); margin-bottom:10px;">${globalAppInfo.name}</h2><p class="text-sub" style="margin-bottom:15px;">Всі права захищено (с)</p><p style="line-height:1.4; white-space: pre-wrap;">${globalAppInfo.desc}</p></div>`; }
@@ -1092,11 +1128,27 @@
         function goToId() { const i = document.getElementById('target-id-input').value.trim(); if(i) viewProfile(i); }
         function sendImagePrompt() { const url = prompt("Встав URL картинки:"); if(url) { document.getElementById('msg-input').value = url; sendMessage(); } }
         async function deletePost(postId, authorId) { if(!confirm("Видалити цей пост?")) return; if(myIsAdmin) await _supabase.from('posts').delete().eq('id', postId); else await _supabase.from('posts').delete().eq('id', postId).eq('author_id', myId); if(authorId) viewProfile(authorId); else loadFeed(); }
-        async function checkFollowStatus(id) { const { data } = await _supabase.from('follows').select('*').eq('follower_id', myId).eq('following_id', id).single(); const btn = document.getElementById('follow-btn'); btn.innerText = data ? "Відписатися" : "Підписатися"; btn.className = data ? "btn-secondary" : "btn-primary"; btn.onclick = () => toggleFollow(id, !!data); }
+        
+        // ВИПРАВЛЕННЯ БАГУ ПІДПИСОК (замість single використано maybeSingle)
+        async function checkFollowStatus(id) { 
+            const { data } = await _supabase.from('follows').select('*').eq('follower_id', myId).eq('following_id', id).maybeSingle(); 
+            const btn = document.getElementById('follow-btn'); 
+            btn.innerText = data ? "Відписатися" : "Підписатися"; 
+            btn.className = data ? "btn-secondary" : "btn-primary"; 
+            btn.onclick = () => toggleFollow(id, !!data); 
+        }
         async function toggleFollow(id, isF) { if(isF) await _supabase.from('follows').delete().eq('follower_id', myId).eq('following_id', id); else await _supabase.from('follows').insert([{follower_id:myId, following_id:id}]); viewProfile(id); }
         async function updateFollowCounts(id) { const { count: f1 } = await _supabase.from('follows').select('*', { count: 'exact' }).eq('following_id', id); const { count: f2 } = await _supabase.from('follows').select('*', { count: 'exact' }).eq('follower_id', id); document.getElementById('count-followers').innerText = f1 || 0; document.getElementById('count-following').innerText = f2 || 0; }
-        async function checkFavoriteStatus(id) { const btn = document.getElementById('fav-btn'); const { data } = await _supabase.from('favorites').select('*').eq('user_id', myId).eq('favorite_id', id).single(); btn.innerText = data ? "Видалити з обраного" : "В обране"; btn.onclick = () => toggleFavorite(id, !!data); }
+        
+        // ВИПРАВЛЕННЯ БАГУ ПІДПИСОК (замість single використано maybeSingle)
+        async function checkFavoriteStatus(id) { 
+            const btn = document.getElementById('fav-btn'); 
+            const { data } = await _supabase.from('favorites').select('*').eq('user_id', myId).eq('favorite_id', id).maybeSingle(); 
+            btn.innerText = data ? "Видалити з обраного" : "В обране"; 
+            btn.onclick = () => toggleFavorite(id, !!data); 
+        }
         async function toggleFavorite(id, isFav) { if(isFav) await _supabase.from('favorites').delete().eq('user_id', myId).eq('favorite_id', id); else await _supabase.from('favorites').insert([{user_id: myId, favorite_id: id}]); checkFavoriteStatus(id); }
+        
         async function loadFavoritesTab() { clearMainArea(); const wall = document.getElementById('wall-posts'); wall.innerHTML = '<div class="tab-header">Обрані контакти</div>'; const { data: favs } = await _supabase.from('favorites').select('favorite_id').eq('user_id', myId); if(!favs || favs.length === 0) { wall.innerHTML += '<div class="text-sub" style="padding-left:8px;">Список обраних порожній.</div>'; return; } const { data: users } = await _supabase.from('profiles').select('*').in('id', favs.map(f => f.favorite_id)); if(users) { users.forEach(u => { const div = document.createElement('div'); div.className = 'list-item glass-panel card'; div.style.marginBottom = '12px'; div.onclick = () => viewProfile(u.id); div.innerHTML = `<img src="${u.avatar_url || DEFAULT_AVATAR}" class="avatar-md"><div><b>${u.nickname}</b><br><span class="text-sub">UUID: ${u.id.substring(0,8)}...</span></div>`; wall.appendChild(div); }); } }
 
         function showSearchEngine() {
@@ -1184,12 +1236,45 @@
                 const isLiked = (v.liked_by || []).includes(String(myId));
                 const canDelete = (v.author_id === myId || myIsAdmin);
                 const authorName = userCache[v.author_id] ? userCache[v.author_id].nickname : `Автор`;
-                return `<div class="post"><div class="post-header"><span><b>${v.title}</b> <span class="text-sub">| від <a onclick="viewProfile('${v.author_id}')">${authorName}</a></span></span>${canDelete ? `<button class="btn-text btn-delete" style="color:var(--danger)" onclick="deleteVideo('${v.id}')">[x] Видалити</button>` : ''}</div><div class="post-body" style="padding: 0; background: #000; text-align: center;"><video controls style="width: 100%; max-height: 400px; display: block;" preload="metadata"><source src="${v.url}" type="video/mp4"></video></div><div class="post-footer"><button onclick="toggleVideoLike('${v.id}')" class="btn-like ${isLiked ? 'active' : ''}">&hearts; (${v.likes || 0})</button></div></div>`;
+                return `<div class="post"><div class="post-header"><span><b>${v.title}</b> <span class="text-sub">| від <a onclick="viewProfile('${v.author_id}')">${authorName}</a></span></span>${canDelete ? `<button class="btn-text btn-delete" style="color:var(--danger)" onclick="deleteVideo('${v.id}')">[x] Видалити</button>` : ''}</div><div class="post-body" style="padding: 0; background: #000; text-align: center;"><video controls style="width: 100%; max-height: 400px; display: block;" preload="metadata"><source src="${v.url}" type="video/mp4"></video></div><div class="post-footer"><button onclick="toggleVideoLike('${v.id}', this)" class="btn-like ${isLiked ? 'active' : ''}">&hearts; (<span class="like-count">${v.likes || 0}</span>)</button></div></div>`;
             }).join('');
         }
 
         async function deleteVideo(id) { if(confirm("Видалити це відео?")) { await _supabase.from('videos').delete().eq('id', id); loadVideos(); } }
-        async function toggleVideoLike(videoId) { const { data: video } = await _supabase.from('videos').select('likes, liked_by').eq('id', videoId).single(); if (!video) return; let likedBy = video.liked_by || []; let likesCount = parseInt(video.likes) || 0; const uid = String(myId); if (likedBy.includes(uid)) { likedBy = likedBy.filter(i => i !== uid); likesCount = Math.max(0, likesCount - 1); } else { likedBy.push(uid); likesCount++; } await _supabase.from('videos').update({ likes: likesCount, liked_by: likedBy }).eq('id', videoId); loadVideos(); }
+        
+        // ОПТИМІЗОВАНА ФУНКЦІЯ ЛАЙКІВ ДЛЯ ВІДЕО
+        async function toggleVideoLike(videoId, btnElement) { 
+            if (!myId) return alert("Авторизуйтесь!");
+            const countSpan = btnElement.querySelector('.like-count');
+            let currentCount = parseInt(countSpan.innerText) || 0;
+            const isLiked = btnElement.classList.contains('active');
+            
+            if (isLiked) {
+                btnElement.classList.remove('active');
+                countSpan.innerText = Math.max(0, currentCount - 1);
+            } else {
+                btnElement.classList.add('active');
+                countSpan.innerText = currentCount + 1;
+            }
+
+            const { data: video } = await _supabase.from('videos').select('likes, liked_by').eq('id', videoId).maybeSingle(); 
+            if (!video) return; 
+            
+            let likedBy = video.liked_by || []; 
+            let likesCount = parseInt(video.likes) || 0; 
+            const uid = String(myId); 
+            
+            if (isLiked) { 
+                likedBy = likedBy.filter(i => i !== uid); 
+                likesCount = Math.max(0, likesCount - 1); 
+            } else { 
+                if (!likedBy.includes(uid)) {
+                    likedBy.push(uid); 
+                    likesCount++; 
+                }
+            } 
+            await _supabase.from('videos').update({ likes: likesCount, liked_by: likedBy }).eq('id', videoId); 
+        }
 
         function showMailClient() {
             clearMainArea(); switchTab('col-main'); 
@@ -1265,7 +1350,8 @@
             const { data: channel } = await _supabase.from('channels').select('*').eq('id', channelId).single(); 
             if (!channel) return;
             
-            const { data: subData } = await _supabase.from('channel_subscriptions').select('*').eq('user_id', String(myId)).eq('channel_id', channelId).single(); 
+            // ВИПРАВЛЕННЯ БАГУ ПІДПИСОК НА КАНАЛИ (замість single використано maybeSingle)
+            const { data: subData } = await _supabase.from('channel_subscriptions').select('*').eq('user_id', String(myId)).eq('channel_id', channelId).maybeSingle(); 
             const isSubbed = !!subData;
 
             // Проверяем, может ли текущий пользователь публиковать контент в этот канал
@@ -1343,7 +1429,7 @@
                             <video controls style="width:100%; max-height:400px;" preload="metadata"><source src="${item.url}" type="video/mp4"></video>
                         </div>
                         <div class="post-footer">
-                            <button onclick="toggleVideoLike('${item.id}'); setTimeout(() => loadChannelPosts('${channelId}'), 500);" class="btn-like ${isLiked ? 'active' : ''}">&hearts; (${item.likes || 0})</button>
+                            <button onclick="toggleVideoLike('${item.id}', this)" class="btn-like ${isLiked ? 'active' : ''}">&hearts; (<span class="like-count">${item.likes || 0}</span>)</button>
                         </div>
                     `;
                 } else {
@@ -1351,7 +1437,7 @@
                         <div class="post-header"><span class="text-sub">${new Date(item.created_at).toLocaleString()}</span></div>
                         <div class="post-body">${parseContent(item.text)}</div>
                         <div class="post-footer">
-                            <button onclick="toggleLike('${item.id}', '${channelId}', false); setTimeout(() => loadChannelPosts('${channelId}'), 500);" class="btn-like ${isLiked ? 'active' : ''}">&hearts; (${item.likes || 0})</button>
+                            <button onclick="toggleLike('${item.id}', this)" class="btn-like ${isLiked ? 'active' : ''}">&hearts; (<span class="like-count">${item.likes || 0}</span>)</button>
                         </div>
                     `;
                 }
