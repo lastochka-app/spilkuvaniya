@@ -318,38 +318,11 @@
 
         /* Стилі для каналів */
         .channel-banner {
-            width: 100%;
-            height: 150px;
-            object-fit: cover;
-            border-bottom: 2px solid var(--glass-border);
-            border-radius: var(--radius-md) var(--radius-md) 0 0;
+            width: 100%; height: 150px; object-fit: cover; border-bottom: 2px solid var(--glass-border); border-radius: var(--radius-md) var(--radius-md) 0 0;
         }
-        .channel-header-info {
-            position: relative;
-            padding: 10px 15px 15px 120px; /* Відступ для аватарки */
-            background: #FFF;
-            border-bottom: 1px solid var(--glass-border);
-        }
-        .channel-avatar {
-            position: absolute;
-            top: -40px;
-            left: 15px;
-            width: 90px;
-            height: 90px;
-            border: 3px solid #FFF;
-            border-radius: 4px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-            object-fit: cover;
-            background: #FFF;
-        }
-        .channel-badge {
-            background: var(--primary);
-            color: #FFF;
-            font-size: 9px;
-            padding: 2px 5px;
-            border-radius: 3px;
-            vertical-align: middle;
-        }
+        .channel-header-info { position: relative; padding: 10px 15px 15px 120px; background: #FFF; border-bottom: 1px solid var(--glass-border); }
+        .channel-avatar { position: absolute; top: -40px; left: 15px; width: 90px; height: 90px; border: 3px solid #FFF; border-radius: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.3); object-fit: cover; background: #FFF; }
+        .channel-badge { background: var(--primary); color: #FFF; font-size: 9px; padding: 2px 5px; border-radius: 3px; vertical-align: middle; }
     </style>
 </head>
 <body>
@@ -362,14 +335,19 @@
     <div id="auth-box">
         <div class="glass-panel card-auth">
             <h2 style="margin-bottom: 16px; font-size: 16px; color: var(--primary); border-bottom: 2px solid var(--glass-border); padding-bottom: 5px; text-shadow: 1px 1px 0 #FFF;">Вхід у систему</h2>
-            <label class="form-label">Ваш ID</label>
-            <input type="number" id="my-id-input" placeholder="ID">
-            <label class="form-label">Нікнейм (при реєстрації)</label>
-            <input type="text" id="my-nick-input" placeholder="Нікнейм">
+            
+            <label class="form-label">Email</label>
+            <input type="email" id="my-email-input" placeholder="post@example.com">
+            
             <label class="form-label">Пароль</label>
             <input type="password" id="my-pass-input" placeholder="Пароль">
+            
+            <label class="form-label">Нікнейм (тільки для реєстрації)</label>
+            <input type="text" id="my-nick-input" placeholder="Нікнейм">
+            
             <label class="form-label">URL аватара (необов'язково)</label>
             <input type="text" id="my-avatar-input" placeholder="http://...">
+            
             <div class="flex-row mt-15" style="flex-direction: column; gap: 8px;">
                 <button class="btn-primary" onclick="handleAuth('login')">Увійти в акаунт</button>
                 <div style="margin: 4px 0; text-align: center; color: #888; font-size: 10px; font-weight: bold;">-- АБО --</div>
@@ -388,9 +366,10 @@
             
             <div class="glass-panel card" style="padding: 6px;">
                 <button class="btn-nav" onclick="loadFeed()">Головна</button>
-                <button class="btn-nav" onclick="showVideos()">Відеозаписи  </button>
-                <button class="btn-nav" onclick="showChannelsList()">Канали  </button>
-                <button class="btn-nav" onclick="showMailClient()">Пошта  </button> <button class="btn-nav" onclick="loadFavoritesTab()">Обрані</button>
+                <button class="btn-nav" onclick="showVideos()">Відеозаписи</button>
+                <button class="btn-nav" onclick="showChannelsList()">Канали</button>
+                <button class="btn-nav" onclick="showMailClient()">Пошта</button> 
+                <button class="btn-nav" onclick="loadFavoritesTab()">Обрані</button>
                 <button class="btn-nav" onclick="showSearchEngine()">Пошуковик сайтів</button>
                 <button class="btn-nav" id="admin-nav-btn" style="display: none; color: var(--danger); border-left-color: var(--danger);" onclick="showAdminPanel()">Адмінка</button>
                 <button class="btn-nav" onclick="showSettings()">Налаштування</button>
@@ -417,7 +396,7 @@
                         <div style="font-size:16px; font-weight:bold; color: var(--primary); display: flex; align-items: center; gap: 4px; border-bottom: 1px solid #EEE; padding-bottom: 4px; margin-bottom: 4px; justify-content: center;">
                             <span id="view-nick"></span> <span id="view-badges"></span>
                         </div>
-                        <span id="view-id-label" class="text-sub"></span>
+                        <span id="view-id-label" class="text-sub" style="word-break: break-all;"></span>
                         <div style="font-size:11px; margin-top:8px; display: flex; justify-content: center; gap: 12px; color: #555; background: #F9F9F9; padding: 6px; border: 1px solid #E0E0E0;">
                             <span>Підписники: <b id="count-followers" style="color:var(--primary)">0</b></span> 
                             <span>Підписки: <b id="count-following" style="color:var(--primary)">0</b></span>
@@ -481,9 +460,9 @@
             </div>
 
             <div class="glass-panel card">
-                <span class="section-title">Пошук за ID</span>
+                <span class="section-title">Пошук за UUID</span>
                 <div class="flex-row">
-                    <input type="number" id="target-id-input" style="margin:0;">
+                    <input type="text" id="target-id-input" placeholder="Введіть UUID" style="margin:0;">
                     <button class="btn-secondary" style="width:auto; min-width:60px;" onclick="goToId()">Знайти</button>
                 </div>
             </div>
@@ -510,8 +489,8 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        const SUPABASE_URL = 'https://vfchwxbtyvtwbsfwmmsf.supabase.co';
-        const SUPABASE_KEY = 'sb_publishable_xHWWz-075-5RII2I5dRHrg_ese0vhwa'; 
+        const SUPABASE_URL = 'https://enbrqdtmnlqenxmhxkad.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_MAwfGgVLp7EnFZ6wq7U65g_Sl7kZ_Hn'; 
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         let myId, myNick, currentChatId;
@@ -530,15 +509,20 @@
             const savedBg = localStorage.getItem('custom_bg');
             if (savedBg) { document.body.style.backgroundImage = `url('${savedBg}')`; document.body.style.backgroundSize = 'auto'; document.body.style.backgroundRepeat = 'repeat'; }
             
-            const sId = localStorage.getItem('saved_user_id');
-            const sPass = localStorage.getItem('saved_user_pass');
-            if (sId && sPass) {
-                const { data: user } = await _supabase.from('users').select('*').eq('id_number', sId).eq('password', sPass).single();
-                if (user) { 
-                    if(user.is_banned) { alert("Ваш акаунт було заблоковано адміністратором."); logout(); return; }
-                    myId = sId; myNick = user.nickname; myIsAdmin = user.is_admin || false; startApp(user); 
-                }
+            // Supabase Auth перевірка сесії
+            const { data: { session } } = await _supabase.auth.getSession();
+            if (session) {
+                await loadCurrentUserProfile(session.user.id);
             }
+
+            // Слухач змін автентифікації
+            _supabase.auth.onAuthStateChange(async (event, session) => {
+                if (event === 'SIGNED_IN' && session) {
+                    await loadCurrentUserProfile(session.user.id);
+                } else if (event === 'SIGNED_OUT') {
+                    location.reload();
+                }
+            });
         };
 
         async function fetchGlobalSettings() {
@@ -552,6 +536,21 @@
                     document.documentElement.style.setProperty('--primary', data.color_primary);
                     document.documentElement.style.setProperty('--link-color', data.color_primary); 
                 }
+            }
+        }
+
+        async function loadCurrentUserProfile(userId) {
+            const { data: user } = await _supabase.from('profiles').select('*').eq('id', userId).single();
+            if (user) {
+                if (user.is_banned) { 
+                    alert("Ваш акаунт було заблоковано адміністратором."); 
+                    _supabase.auth.signOut(); 
+                    return; 
+                }
+                myId = user.id; 
+                myNick = user.nickname; 
+                myIsAdmin = user.is_admin || false; 
+                startApp(user);
             }
         }
 
@@ -580,31 +579,41 @@
 
             loadBanners();
             loadGroups(); loadUsers(); viewProfile(myId); initRealtime();
-            loadRecommendedChannels(); // ДОДАНО
+            loadRecommendedChannels();
         }
 
         async function handleAuth(mode) {
-            const id = document.getElementById('my-id-input').value.trim();
+            const email = document.getElementById('my-email-input').value.trim();
             const pass = document.getElementById('my-pass-input').value.trim();
             const nick = document.getElementById('my-nick-input').value.trim();
             let av = document.getElementById('my-avatar-input').value.trim() || DEFAULT_AVATAR;
 
-            if (mode === 'reg') {
-                if (!nick) { alert("Помилка: Нікнейм обов'язковий для реєстрації!"); return; }
-                await _supabase.from('users').insert([{ id_number: id, password: pass, nickname: nick, avatar_url: av, is_admin: false, is_banned: false, is_verified: false, restrict_posts: false, restrict_groups: false, restrict_chat_first: false }]);
+            if (!email || !pass) {
+                alert("Введіть email та пароль!"); return;
             }
 
-            const { data: user } = await _supabase.from('users').select('*').eq('id_number', id).eq('password', pass).single();
-            if (user) {
-                if(user.is_banned) { alert("Цей акаунт заблоковано!"); return; }
-                myId = id; myNick = user.nickname; myIsAdmin = user.is_admin || false;
-                localStorage.setItem('saved_user_id', id);
-                localStorage.setItem('saved_user_pass', pass);
-                startApp(user);
-            } else alert("Помилка входу! Перевірте дані.");
+            if (mode === 'reg') {
+                if (!nick) { alert("Помилка: Нікнейм обов'язковий для реєстрації!"); return; }
+                const { data, error } = await _supabase.auth.signUp({
+                    email: email,
+                    password: pass,
+                    options: { data: { nickname: nick } }
+                });
+                if (error) { alert("Помилка: " + error.message); return; }
+                if (data.user) {
+                    await _supabase.from('profiles').update({ avatar_url: av }).eq('id', data.user.id);
+                    alert("Реєстрація успішна! Увійдіть з вашими даними.");
+                }
+            } else if (mode === 'login') {
+                const { error } = await _supabase.auth.signInWithPassword({
+                    email: email,
+                    password: pass
+                });
+                if (error) alert("Помилка входу! Перевірте дані: " + error.message);
+            }
         }
 
-        function logout() { localStorage.removeItem('saved_user_id'); localStorage.removeItem('saved_user_pass'); location.reload(); }
+        function logout() { _supabase.auth.signOut(); }
 
         function setTheme(theme) {
             if (theme === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
@@ -617,7 +626,8 @@
             document.getElementById('chat-window').style.display = 'none';
             document.getElementById('profile-screen').style.display = 'flex';
             document.getElementById('profile-card').style.display = 'flex';
-            const { data: user } = await _supabase.from('users').select('*').eq('id_number', userId).single();
+            
+            const { data: user } = await _supabase.from('profiles').select('*').eq('id', userId).single();
             if(!user) return;
             
             document.getElementById('view-avatar').src = user.avatar_url || DEFAULT_AVATAR;
@@ -628,15 +638,15 @@
             if (user.is_admin) badges += " [A]";
             if (user.is_banned) badges += ` <span style="color:var(--danger); font-size:10px; border:1px solid var(--danger); padding:1px 3px;">Забанений</span>`;
             
-            if (myIsAdmin && userId != myId) {
+            if (myIsAdmin && userId !== myId) {
                 if(user.restrict_posts) badges += ` [М:Пости]`;
                 if(user.restrict_groups) badges += ` [М:Групи]`;
                 if(user.restrict_chat_first) badges += ` [М:ЛС]`;
             }
             
             document.getElementById('view-badges').innerHTML = badges;
-            document.getElementById('view-id-label').innerText = "ID: " + user.id_number;
-            const isMe = (userId == myId);
+            document.getElementById('view-id-label').innerText = "UUID: " + user.id;
+            const isMe = (userId === myId);
             const hideAll = (!isMe && user.is_banned && !myIsAdmin);
 
             document.getElementById('wall-input-area').style.display = (isMe && !user.is_banned && !myRestrictPosts) ? 'block' : 'none';
@@ -646,7 +656,7 @@
             document.getElementById('fav-btn').style.display = (isMe || hideAll) ? 'none' : 'inline-flex';
             
             if(!isMe && !hideAll) { 
-                document.getElementById('write-btn').onclick = () => openPrivate(user.id_number, user.nickname); 
+                document.getElementById('write-btn').onclick = () => openPrivate(user.id, user.nickname); 
                 checkFollowStatus(userId); checkFavoriteStatus(userId); 
             } else if(isMe) { loadInbox(); }
             
@@ -669,7 +679,7 @@
             if(posts) {
                 posts.forEach(p => {
                     const isLiked = (p.liked_by || []).includes(String(myId));
-                    const canDelete = (p.author_id == myId || myIsAdmin);
+                    const canDelete = (p.author_id === myId || myIsAdmin);
                     const div = document.createElement('div');
                     div.className = 'post';
                     div.innerHTML = `
@@ -703,11 +713,11 @@
             if(posts) {
                 posts.forEach(p => {
                     const isLiked = (p.liked_by || []).includes(String(myId));
-                    const canDelete = (p.author_id == myId || myIsAdmin);
+                    const canDelete = (p.author_id === myId || myIsAdmin);
                     const div = document.createElement('div'); div.className = 'post';
                     div.innerHTML = `
                         <div class="post-header">
-                            <a onclick="viewProfile('${p.author_id}')">Автор: ID ${p.author_id}</a>
+                            <a onclick="viewProfile('${p.author_id}')">Автор: ${p.author_id.substring(0,8)}...</a>
                             <span class="text-sub">${new Date(p.created_at).toLocaleDateString()}</span> 
                             ${canDelete ? `<button class="btn-text btn-delete" style="color:var(--danger)" onclick="deletePost('${p.id}', null)">[x] Видалити</button>` : ''}
                         </div>
@@ -743,12 +753,12 @@
             if(!comments || comments.length === 0) { listEl.innerHTML = '<span class="text-sub" style="font-size:11px;">Коментарів поки немає.</span>'; return; }
 
             const authorIds = [...new Set(comments.map(c => c.author_id))];
-            const { data: users } = await _supabase.from('users').select('id_number, nickname, avatar_url, is_verified, is_admin').in('id_number', authorIds);
-            if(users) users.forEach(u => userCache[u.id_number] = u);
+            const { data: users } = await _supabase.from('profiles').select('id, nickname, avatar_url, is_verified, is_admin').in('id', authorIds);
+            if(users) users.forEach(u => userCache[u.id] = u);
 
             listEl.innerHTML = comments.map(c => {
-                const user = userCache[c.author_id] || { nickname: `ID ${c.author_id}`, avatar_url: DEFAULT_AVATAR };
-                const canDeleteComment = (c.author_id == myId || myIsAdmin);
+                const user = userCache[c.author_id] || { nickname: `Користувач`, avatar_url: DEFAULT_AVATAR };
+                const canDeleteComment = (c.author_id === myId || myIsAdmin);
                 let b = user.is_verified ? `<span style="color:var(--verified); font-size:10px;">[v]</span>` : '';
                 if (user.is_admin) b += ' [A]';
 
@@ -762,7 +772,7 @@
                             </div>
                             <div style="font-size:12px;">${parseContent(c.text)}</div>
                         </div>
-                        ${canDeleteComment ? `<a style="color:var(--danger); font-size:10px;" onclick="deleteComment('${c.id}', '${postId}')">[x]</a>` : ''}
+                        ${canDeleteComment ? `<a style="color:var(--danger); font-size:10px; cursor:pointer;" onclick="deleteComment('${c.id}', '${postId}')">[x]</a>` : ''}
                     </div>
                 `;
             }).join('');
@@ -849,13 +859,13 @@
             if(!currentChatId) return;
             const { data: messages } = await _supabase.from('messages').select('*').eq('chat_id', currentChatId).order('created_at', { ascending: true });
             const box = document.getElementById('messages-list');
-            const senderIds = [...new Set(messages.map(m => m.sender_id))];
-            const { data: users } = await _supabase.from('users').select('id_number, nickname, avatar_url, is_verified, is_admin').in('id_number', senderIds);
-            if(users) users.forEach(u => userCache[u.id_number] = u);
+            const senderIds = [...new Set((messages||[]).map(m => m.sender_id))];
+            const { data: users } = await _supabase.from('profiles').select('id, nickname, avatar_url, is_verified, is_admin').in('id', senderIds);
+            if(users) users.forEach(u => userCache[u.id] = u);
 
             box.innerHTML = (messages || []).map(m => {
                 const user = userCache[m.sender_id] || { nickname: 'User', avatar_url: DEFAULT_AVATAR };
-                const isMe = m.sender_id == myId; 
+                const isMe = m.sender_id === myId; 
                 let b = user.is_verified ? `<span style="color:var(--verified); font-size:10px;">[v]</span>` : '';
                 return `
                 <div class="msg-row ${isMe ? 'me' : ''}">
@@ -942,8 +952,8 @@
                 </div>
 
                 <div class="glass-panel card" style="border-left: 3px solid var(--danger)">
-                    <span class="section-title">Модерація користувачів (За ID)</span>
-                    <input type="number" id="admin-target-id" placeholder="ID користувача...">
+                    <span class="section-title">Модерація користувачів (За UUID)</span>
+                    <input type="text" id="admin-target-id" placeholder="UUID користувача...">
                     <div class="flex-row" style="flex-wrap: wrap; gap: 4px;">
                         <button class="btn-secondary" onclick="moderateUser('verify', true)">Дати галочку</button>
                         <button class="btn-secondary" onclick="moderateUser('verify', false)">Зняти галочку</button>
@@ -984,42 +994,42 @@
 
         async function moderateUser(action, status) {
             const targetId = document.getElementById('admin-target-id').value.trim();
-            if(!targetId) { alert("Вкажіть ID користувача!"); return; }
-            const { data } = await _supabase.from('users').select('*').eq('id_number', targetId).single();
+            if(!targetId) { alert("Вкажіть UUID користувача!"); return; }
+            const { data } = await _supabase.from('profiles').select('*').eq('id', targetId).single();
             if(!data) { alert("Користувача не знайдено!"); return; }
-            if (action === 'verify') await _supabase.from('users').update({ is_verified: status }).eq('id_number', targetId);
-            else if (action === 'ban') await _supabase.from('users').update({ is_banned: status }).eq('id_number', targetId);
+            if (action === 'verify') await _supabase.from('profiles').update({ is_verified: status }).eq('id', targetId);
+            else if (action === 'ban') await _supabase.from('profiles').update({ is_banned: status }).eq('id', targetId);
             alert(`Статус змінено.`); loadUsers();
         }
 
         async function moderateRestriction(type, status) {
             const targetId = document.getElementById('admin-target-id').value.trim();
-            if(!targetId) { alert("Вкажіть ID користувача!"); return; }
+            if(!targetId) { alert("Вкажіть UUID користувача!"); return; }
             let fieldsToUpdate = {};
             if(type === 'posts') fieldsToUpdate = { restrict_posts: status };
             else if(type === 'groups') fieldsToUpdate = { restrict_groups: status };
             else if(type === 'chat_first') fieldsToUpdate = { restrict_chat_first: status };
             else if(type === 'clear_all') fieldsToUpdate = { restrict_posts: false, restrict_groups: false, restrict_chat_first: false };
-            await _supabase.from('users').update(fieldsToUpdate).eq('id_number', targetId);
+            await _supabase.from('profiles').update(fieldsToUpdate).eq('id', targetId);
             alert(`Обмеження змінено.`); loadUsers();
         }
 
         async function setAdminStatus(status) {
             const targetId = document.getElementById('admin-target-id').value.trim();
-            if(!targetId) { alert("Вкажіть ID!"); return; }
-            await _supabase.from('users').update({ is_admin: status }).eq('id_number', targetId);
+            if(!targetId) { alert("Вкажіть UUID!"); return; }
+            await _supabase.from('profiles').update({ is_admin: status }).eq('id', targetId);
             renderAdminsList(); loadUsers();
         }
 
         async function renderAdminsList() {
             const listEl = document.getElementById('admins-list'); if(!listEl) return;
-            const { data: admins } = await _supabase.from('users').select('*').eq('is_admin', true);
+            const { data: admins } = await _supabase.from('profiles').select('*').eq('is_admin', true);
             if(admins && admins.length > 0) {
                 listEl.innerHTML = admins.map(a => `
                     <div class="list-item" style="border: 1px solid #CCC; background:#F9F9F9;">
                         <img src="${a.avatar_url || DEFAULT_AVATAR}" class="avatar-sm">
-                        <div style="flex:1;"><b>${a.nickname}</b><br><span class="text-sub">ID: ${a.id_number}</span></div>
-                        ${a.id_number != myId ? `<button class="btn-text" style="color:var(--danger)" onclick="document.getElementById('admin-target-id').value='${a.id_number}'; setAdminStatus(false);">[Зняти]</button>` : '<span class="text-sub" style="font-size:11px;">Ви</span>'}
+                        <div style="flex:1;"><b>${a.nickname}</b><br><span class="text-sub">UUID: ${a.id}</span></div>
+                        ${a.id !== myId ? `<button class="btn-text" style="color:var(--danger)" onclick="document.getElementById('admin-target-id').value='${a.id}'; setAdminStatus(false);">[Зняти]</button>` : '<span class="text-sub" style="font-size:11px;">Ви</span>'}
                     </div>`).join('');
             } else { listEl.innerHTML = '<span class="text-sub">Нічого не знайдено.</span>'; }
         }
@@ -1030,7 +1040,7 @@
             const bg = document.getElementById('set-bg').value;
             localStorage.setItem('custom_bg', bg);
             let up = { nickname: nick }; if(av) up.avatar_url = av;
-            await _supabase.from('users').update(up).eq('id_number', myId); location.reload(); 
+            await _supabase.from('profiles').update(up).eq('id', myId); location.reload(); 
         }
 
         function clearMainArea() {
@@ -1043,12 +1053,12 @@
             document.getElementById('wall-posts').innerHTML = '';
         }
 
-        function initRealtime() { _supabase.channel('any').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, (payload) => { const m = payload.new; if(m.sender_id != myId) { if(currentChatId === m.chat_id) loadMessages(); else if(m.chat_id.includes(myId) || m.chat_id.startsWith("group_")) showToast(m.sender_id, m.text); } }).subscribe(); }
-        function showToast(senderId, text) { const container = document.getElementById('notification-container'); const t = document.createElement('div'); t.className = 'toast'; t.innerHTML = `<b>ID ${senderId}:</b> ${text.substring(0,30)}...`; t.onclick = () => viewProfile(senderId); container.appendChild(t); setTimeout(() => t.remove(), 5000); }
+        function initRealtime() { _supabase.channel('any').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, (payload) => { const m = payload.new; if(m.sender_id !== myId) { if(currentChatId === m.chat_id) loadMessages(); else if(m.chat_id.includes(myId) || m.chat_id.startsWith("group_")) showToast(m.sender_id, m.text); } }).subscribe(); }
+        function showToast(senderId, text) { const container = document.getElementById('notification-container'); const t = document.createElement('div'); t.className = 'toast'; t.innerHTML = `<b>Нове повідомлення:</b> ${text.substring(0,30)}...`; t.onclick = () => viewProfile(senderId); container.appendChild(t); setTimeout(() => t.remove(), 5000); }
 
         async function loadUsers() {
-            const { data } = await _supabase.from('users').select('*').eq('is_banned', false);
-            if(data) document.getElementById('users-list').innerHTML = data.map(u => `<div class="list-item" onclick="viewProfile('${u.id_number}')"><img src="${u.avatar_url || DEFAULT_AVATAR}" class="avatar-sm"> <b>${u.nickname} ${u.is_verified?'<span style="color:var(--verified); font-size:10px;">[v]</span>':''} ${u.is_admin?'[A]':''}</b></div>`).join('');
+            const { data } = await _supabase.from('profiles').select('*').eq('is_banned', false).limit(10);
+            if(data) document.getElementById('users-list').innerHTML = data.map(u => `<div class="list-item" onclick="viewProfile('${u.id}')"><img src="${u.avatar_url || DEFAULT_AVATAR}" class="avatar-sm"> <b>${u.nickname} ${u.is_verified?'<span style="color:var(--verified); font-size:10px;">[v]</span>':''} ${u.is_admin?'[A]':''}</b></div>`).join('');
         }
 
         async function loadGroups() {
@@ -1065,11 +1075,11 @@
         function startGroupChat(id, name) { if (myRestrictGroups) { alert("Доступ до груп заблоковано."); return; } currentChatId = "group_" + id; document.getElementById('profile-screen').style.display = 'none'; document.getElementById('chat-window').style.display = 'flex'; document.getElementById('chat-title').innerText = name; switchTab('col-main'); loadMessages(); }
 
         async function toggleLike(postId, authorId, isFeed = false) { const { data: post } = await _supabase.from('posts').select('likes, liked_by').eq('id', postId).single(); if (!post) return; let likedBy = post.liked_by || []; let likesCount = parseInt(post.likes) || 0; const uid = String(myId); if (likedBy.includes(uid)) { likedBy = likedBy.filter(i => i !== uid); likesCount = Math.max(0, likesCount - 1); } else { likedBy.push(uid); likesCount++; } await _supabase.from('posts').update({ likes: likesCount, liked_by: likedBy }).eq('id', postId); if(isFeed) loadFeed(); else loadPosts(authorId); }
-        async function loadInbox() { const { data } = await _supabase.from('messages').select('*').order('created_at', { ascending: false }).limit(40); if(!data) return; const res = []; const seen = new Set(); for(let m of data) { if(m.sender_id == myId) continue; if(m.chat_id.includes(myId) || m.chat_id.startsWith("group_")) { if(!seen.has(m.chat_id)) { seen.add(m.chat_id); res.push(m); } } if(res.length >= 5) break; } document.getElementById('inbox-list').innerHTML = res.map(m => `<div class="list-item" style="border: 1px solid #CCC; background: #F9F9F9;" onclick="openChatById('${m.chat_id}')"><div style="display:flex; flex-direction:column;"><b>${m.chat_id.startsWith('group_')?'Група':'ID '+m.sender_id}:</b> <span class="text-sub">${m.text.substring(0,35)}</span></div></div>`).join(''); }
-        async function openChatById(chatId) { if(chatId.startsWith("group_")) { const gid = chatId.replace("group_", ""); const {data} = await _supabase.from('groups').select('name').eq('id', gid).single(); if(data) startGroupChat(gid, data.name); } else { const tid = chatId.split('_').find(x => x != myId); const {data} = await _supabase.from('users').select('nickname').eq('id_number', tid).single(); if(data) openPrivate(tid, data.nickname); } }
+        async function loadInbox() { const { data } = await _supabase.from('messages').select('*').order('created_at', { ascending: false }).limit(40); if(!data) return; const res = []; const seen = new Set(); for(let m of data) { if(m.sender_id === myId) continue; if(m.chat_id.includes(myId) || m.chat_id.startsWith("group_")) { if(!seen.has(m.chat_id)) { seen.add(m.chat_id); res.push(m); } } if(res.length >= 5) break; } document.getElementById('inbox-list').innerHTML = res.map(m => `<div class="list-item" style="border: 1px solid #CCC; background: #F9F9F9;" onclick="openChatById('${m.chat_id}')"><div style="display:flex; flex-direction:column;"><b>${m.chat_id.startsWith('group_')?'Група':'Нове повідомлення'}:</b> <span class="text-sub">${m.text.substring(0,35)}</span></div></div>`).join(''); }
+        async function openChatById(chatId) { if(chatId.startsWith("group_")) { const gid = chatId.replace("group_", ""); const {data} = await _supabase.from('groups').select('name').eq('id', gid).single(); if(data) startGroupChat(gid, data.name); } else { const tid = chatId.split('_').find(x => x !== myId); const {data} = await _supabase.from('profiles').select('nickname').eq('id', tid).single(); if(data) openPrivate(tid, data.nickname); } }
         function showAbout() { clearMainArea(); document.getElementById('wall-posts').innerHTML = `<div class="tab-header">Про проєкт</div><div class="glass-panel card"><h2 style="color:var(--link-color); margin-bottom:10px;">${globalAppInfo.name}</h2><p class="text-sub" style="margin-bottom:15px;">Всі права захищено (с)</p><p style="line-height:1.4; white-space: pre-wrap;">${globalAppInfo.desc}</p></div>`; }
         function showWall() { viewProfile(myId); }
-        function goToId() { const i = document.getElementById('target-id-input').value; if(i) viewProfile(i); }
+        function goToId() { const i = document.getElementById('target-id-input').value.trim(); if(i) viewProfile(i); }
         function sendImagePrompt() { const url = prompt("Встав URL картинки:"); if(url) { document.getElementById('msg-input').value = url; sendMessage(); } }
         async function deletePost(postId, authorId) { if(!confirm("Видалити цей пост?")) return; if(myIsAdmin) await _supabase.from('posts').delete().eq('id', postId); else await _supabase.from('posts').delete().eq('id', postId).eq('author_id', myId); if(authorId) viewProfile(authorId); else loadFeed(); }
         async function checkFollowStatus(id) { const { data } = await _supabase.from('follows').select('*').eq('follower_id', myId).eq('following_id', id).single(); const btn = document.getElementById('follow-btn'); btn.innerText = data ? "Відписатися" : "Підписатися"; btn.className = data ? "btn-secondary" : "btn-primary"; btn.onclick = () => toggleFollow(id, !!data); }
@@ -1077,17 +1087,13 @@
         async function updateFollowCounts(id) { const { count: f1 } = await _supabase.from('follows').select('*', { count: 'exact' }).eq('following_id', id); const { count: f2 } = await _supabase.from('follows').select('*', { count: 'exact' }).eq('follower_id', id); document.getElementById('count-followers').innerText = f1 || 0; document.getElementById('count-following').innerText = f2 || 0; }
         async function checkFavoriteStatus(id) { const btn = document.getElementById('fav-btn'); const { data } = await _supabase.from('favorites').select('*').eq('user_id', myId).eq('favorite_id', id).single(); btn.innerText = data ? "Видалити з обраного" : "В обране"; btn.onclick = () => toggleFavorite(id, !!data); }
         async function toggleFavorite(id, isFav) { if(isFav) await _supabase.from('favorites').delete().eq('user_id', myId).eq('favorite_id', id); else await _supabase.from('favorites').insert([{user_id: myId, favorite_id: id}]); checkFavoriteStatus(id); }
-        async function loadFavoritesTab() { clearMainArea(); const wall = document.getElementById('wall-posts'); wall.innerHTML = '<div class="tab-header">Обрані контакти</div>'; const { data: favs } = await _supabase.from('favorites').select('favorite_id').eq('user_id', myId); if(!favs || favs.length === 0) { wall.innerHTML += '<div class="text-sub" style="padding-left:8px;">Список обраних порожній.</div>'; return; } const { data: users } = await _supabase.from('users').select('*').in('id_number', favs.map(f => f.favorite_id)); if(users) { users.forEach(u => { const div = document.createElement('div'); div.className = 'list-item glass-panel card'; div.style.marginBottom = '12px'; div.onclick = () => viewProfile(u.id_number); div.innerHTML = `<img src="${u.avatar_url || DEFAULT_AVATAR}" class="avatar-md"><div><b>${u.nickname}</b><br><span class="text-sub">ID: ${u.id_number}</span></div>`; wall.appendChild(div); }); } }
+        async function loadFavoritesTab() { clearMainArea(); const wall = document.getElementById('wall-posts'); wall.innerHTML = '<div class="tab-header">Обрані контакти</div>'; const { data: favs } = await _supabase.from('favorites').select('favorite_id').eq('user_id', myId); if(!favs || favs.length === 0) { wall.innerHTML += '<div class="text-sub" style="padding-left:8px;">Список обраних порожній.</div>'; return; } const { data: users } = await _supabase.from('profiles').select('*').in('id', favs.map(f => f.favorite_id)); if(users) { users.forEach(u => { const div = document.createElement('div'); div.className = 'list-item glass-panel card'; div.style.marginBottom = '12px'; div.onclick = () => viewProfile(u.id); div.innerHTML = `<img src="${u.avatar_url || DEFAULT_AVATAR}" class="avatar-md"><div><b>${u.nickname}</b><br><span class="text-sub">UUID: ${u.id.substring(0,8)}...</span></div>`; wall.appendChild(div); }); } }
 
-        /* =========================================
-           ФУНКЦІОНАЛ ПОШУКОВИКА САЙТІВ 🔍
-           ========================================= */
         function showSearchEngine() {
             clearMainArea();
             const wall = document.getElementById('wall-posts');
             wall.innerHTML = `
                 <div class="tab-header">Пошуковик сайтів</div>
-                
                 <div class="glass-panel card" style="background: #F4F8FC; border: 1px solid #8FA6C3;">
                     <span class="section-title">Додати новий сайт у каталог</span>
                     <label class="form-label">Назва сайту</label>
@@ -1098,7 +1104,6 @@
                     <textarea id="web-desc" rows="2" placeholder="Опишіть, про що цей ресурс..."></textarea>
                     <button class="btn-primary mt-15" onclick="addWebsite()">Внести до реєстру</button>
                 </div>
-
                 <div class="glass-panel card">
                     <span class="section-title">Глобальний пошук за базою даних</span>
                     <div class="flex-row">
@@ -1106,7 +1111,6 @@
                         <button class="btn-secondary" style="width:auto; min-width:80px;" onclick="searchWebsites()">Шукати</button>
                     </div>
                 </div>
-
                 <div class="glass-panel card" id="web-results-card" style="display:none;">
                     <span class="section-title">Знайдені збіги</span>
                     <div id="web-results-list" class="scroll-area" style="max-height: 400px; display:flex; flex-direction:column; gap:10px;"></div>
@@ -1118,925 +1122,145 @@
             const title = document.getElementById('web-title').value.trim();
             const url = document.getElementById('web-url').value.trim();
             const desc = document.getElementById('web-desc').value.trim();
-
-            if (!title || !url || !desc) {
-                alert("Заповніть всі текстові поля перед додаванням!");
-                return;
-            }
-
-            const { error } = await _supabase.from('websites').insert([
-                { title: title, url: url, description: desc, added_by: String(myId) }
-            ]);
-
-            if (error) {
-                alert("Помилка Supabase: " + error.message);
-            } else {
-                alert("Сайт успішно індексовано та додано в пошукову базу!");
-                document.getElementById('web-title').value = '';
-                document.getElementById('web-url').value = '';
-                document.getElementById('web-desc').value = '';
-            }
+            if (!title || !url || !desc) { alert("Заповніть всі текстові поля перед додаванням!"); return; }
+            await _supabase.from('websites').insert([{ title: title, url: url, description: desc, added_by: String(myId) }]);
+            alert("Сайт успішно індексовано!");
+            document.getElementById('web-title').value = ''; document.getElementById('web-url').value = ''; document.getElementById('web-desc').value = '';
         }
 
         async function searchWebsites() {
             const query = document.getElementById('web-search-query').value.trim();
-            if (!query) {
-                alert("Введіть хоча б декілька літер для початку пошуку!");
-                return;
-            }
-
-            const { data, error } = await _supabase.from('websites')
-                .select('*')
-                .ilike('title', `%${query}%`)
-                .order('created_at', { ascending: false });
-
-            if (error) {
-                alert("Помилка під час виконання запиту: " + error.message);
-                return;
-            }
-
-            const card = document.getElementById('web-results-card');
-            const list = document.getElementById('web-results-list');
+            if (!query) return;
+            const { data } = await _supabase.from('websites').select('*').ilike('title', `%${query}%`).order('created_at', { ascending: false });
+            const card = document.getElementById('web-results-card'); const list = document.getElementById('web-results-list');
             card.style.display = 'block';
-
-            if (!data || data.length === 0) {
-                list.innerHTML = '<span class="text-sub" style="padding: 10px; display:block; text-align:center;">На жаль, за вашим запитом нічого не знайдено.</span>';
-                return;
-            }
-
-            list.innerHTML = data.map(site => `
-                <div style="padding:10px; border-bottom:1px dashed #CCC; background:#FFFBE6; border: 1px solid #F5E8A3; border-radius: var(--radius-sm);">
-                    <div style="font-size:13px; font-weight:bold; margin-bottom:2px;">
-                        <a href="${site.url}" target="_blank" style="color:var(--primary); font-weight:bold; text-decoration:underline;">${site.title}</a>
-                    </div>
-                    <div style="margin-bottom:6px; font-size:10px;">
-                        <a href="${site.url}" target="_blank" style="color:green; text-decoration:none;">${site.url}</a>
-                    </div>
-                    <div style="font-size:11px; color:var(--text-main); line-height:1.4;">${site.description}</div>
-                    <div class="text-sub" style="margin-top:6px; font-size:9px; text-align:right;">Додав користувач із ID: ${site.added_by || 'Анонім'}</div>
-                </div>
-            `).join('');
+            if (!data || data.length === 0) { list.innerHTML = '<span class="text-sub">На жаль, за вашим запитом нічого не знайдено.</span>'; return; }
+            list.innerHTML = data.map(site => `<div style="padding:10px; border-bottom:1px dashed #CCC; background:#FFFBE6; border: 1px solid #F5E8A3; border-radius: var(--radius-sm);"><div style="font-size:13px; font-weight:bold; margin-bottom:2px;"><a href="${site.url}" target="_blank" style="color:var(--primary); font-weight:bold; text-decoration:underline;">${site.title}</a></div><div style="margin-bottom:6px; font-size:10px;"><a href="${site.url}" target="_blank" style="color:green; text-decoration:none;">${site.url}</a></div><div style="font-size:11px; color:var(--text-main); line-height:1.4;">${site.description}</div></div>`).join('');
         }
-
-        /* =========================================
-           ФУНКЦІОНАЛ ВІДЕОЗАПИСІВ 🎥
-           ========================================= */
 
         function showVideos() {
             clearMainArea();
             const wall = document.getElementById('wall-posts');
             wall.innerHTML = `
                 <div class="tab-header">Відеозаписи</div>
-                
                 <div class="glass-panel card" style="background: #F4F8FC; border: 1px solid #8FA6C3;">
                     <span class="section-title">Додати нове відео</span>
-                    <label class="form-label">Назва відео</label>
-                    <input type="text" id="video-title" placeholder="Наприклад: Мій кіт грається">
-                    <label class="form-label">Пряме посилання на відеофайл (.mp4, .webm)</label>
-                    <input type="text" id="video-url" placeholder="https://example.com/video.mp4">
+                    <label class="form-label">Назва відео</label><input type="text" id="video-title">
+                    <label class="form-label">Пряме посилання на відеофайл (.mp4, .webm)</label><input type="text" id="video-url">
                     <button class="btn-primary mt-15" onclick="addVideo()">Опублікувати відео</button>
                 </div>
-
                 <div id="video-feed"></div>
             `;
             loadVideos();
         }
 
         async function addVideo() {
-            if (myRestrictPosts) { alert("Вам обмежено можливість публікувати контент."); return; }
+            if (myRestrictPosts) return;
             const title = document.getElementById('video-title').value.trim();
             const url = document.getElementById('video-url').value.trim();
-
-            if (!title || !url) { alert("Введіть назву та посилання на відео!"); return; }
-
+            if (!title || !url) return;
             await _supabase.from('videos').insert([{ author_id: String(myId), title: title, url: url, likes: 0, liked_by: [] }]);
-            
-            document.getElementById('video-title').value = '';
-            document.getElementById('video-url').value = '';
-            loadVideos();
+            document.getElementById('video-title').value = ''; document.getElementById('video-url').value = ''; loadVideos();
         }
 
         async function loadVideos() {
             const feed = document.getElementById('video-feed');
-            feed.innerHTML = '<div style="text-align:center; padding:20px;">Завантаження...</div>';
-
             const { data: videos } = await _supabase.from('videos').select('*').order('created_at', { ascending: false });
-            
-            if (!videos || videos.length === 0) {
-                feed.innerHTML = '<div class="text-sub" style="padding:10px;">Відеозаписів ще немає. Будь першим!</div>';
-                return;
-            }
-
+            if (!videos || videos.length === 0) { feed.innerHTML = '<div class="text-sub">Відеозаписів ще немає.</div>'; return; }
             const authorIds = [...new Set(videos.map(v => v.author_id))];
-            const { data: users } = await _supabase.from('users').select('id_number, nickname').in('id_number', authorIds);
-            if(users) users.forEach(u => userCache[u.id_number] = u);
-
+            const { data: users } = await _supabase.from('profiles').select('id, nickname').in('id', authorIds);
+            if(users) users.forEach(u => userCache[u.id] = u);
             feed.innerHTML = videos.map(v => {
                 const isLiked = (v.liked_by || []).includes(String(myId));
-                const canDelete = (v.author_id == myId || myIsAdmin);
-                const authorName = userCache[v.author_id] ? userCache[v.author_id].nickname : `ID ${v.author_id}`;
-
-                return `
-                    <div class="post">
-                        <div class="post-header">
-                            <span><b>${v.title}</b> <span class="text-sub">| від <a onclick="viewProfile('${v.author_id}')">${authorName}</a></span></span>
-                            ${canDelete ? `<button class="btn-text btn-delete" style="color:var(--danger)" onclick="deleteVideo('${v.id}')">[x] Видалити</button>` : ''}
-                        </div>
-                        <div class="post-body" style="padding: 0; background: #000; text-align: center;">
-                            <video controls style="width: 100%; max-height: 400px; display: block;" preload="metadata">
-                                <source src="${v.url}" type="video/mp4">
-                                Ваш браузер не підтримує відео.
-                            </video>
-                        </div>
-                        <div class="post-footer">
-                            <button onclick="toggleVideoLike('${v.id}')" class="btn-like ${isLiked ? 'active' : ''}">&hearts; (${v.likes || 0})</button>
-                            <button onclick="toggleVideoComments('${v.id}')" class="btn-secondary" style="width:auto; flex:1;">Коментарі</button>
-                        </div>
-                        <div id="video-comments-box-${v.id}" style="display:none; padding:12px; border-top:1px solid #EEE; background:#FFF;">
-                            <div id="video-comments-list-${v.id}" style="display:flex; flex-direction:column; gap:8px; margin-bottom:8px;"></div>
-                            <div class="flex-row" style="margin:0;">
-                                <input type="text" id="video-comment-input-${v.id}" placeholder="Написати коментар..." style="margin:0;" onkeyup="if(event.keyCode===13) addVideoComment('${v.id}')">
-                                <button class="btn-primary" style="width:auto;" onclick="addVideoComment('${v.id}')">Відпр.</button>
-                            </div>
-                        </div>
-                    </div>
-                `;
+                const canDelete = (v.author_id === myId || myIsAdmin);
+                const authorName = userCache[v.author_id] ? userCache[v.author_id].nickname : `Автор`;
+                return `<div class="post"><div class="post-header"><span><b>${v.title}</b> <span class="text-sub">| від <a onclick="viewProfile('${v.author_id}')">${authorName}</a></span></span>${canDelete ? `<button class="btn-text btn-delete" style="color:var(--danger)" onclick="deleteVideo('${v.id}')">[x] Видалити</button>` : ''}</div><div class="post-body" style="padding: 0; background: #000; text-align: center;"><video controls style="width: 100%; max-height: 400px; display: block;" preload="metadata"><source src="${v.url}" type="video/mp4"></video></div><div class="post-footer"><button onclick="toggleVideoLike('${v.id}')" class="btn-like ${isLiked ? 'active' : ''}">&hearts; (${v.likes || 0})</button></div></div>`;
             }).join('');
         }
 
-        async function deleteVideo(id) {
-            if(!confirm("Видалити це відео?")) return;
-            await _supabase.from('videos').delete().eq('id', id);
-            loadVideos();
-        }
-
-        async function toggleVideoLike(videoId) {
-            const { data: video } = await _supabase.from('videos').select('likes, liked_by').eq('id', videoId).single();
-            if (!video) return;
-            
-            let likedBy = video.liked_by || [];
-            let likesCount = parseInt(video.likes) || 0;
-            const uid = String(myId);
-            
-            if (likedBy.includes(uid)) {
-                likedBy = likedBy.filter(i => i !== uid);
-                likesCount = Math.max(0, likesCount - 1);
-            } else {
-                likedBy.push(uid);
-                likesCount++;
-            }
-            
-            await _supabase.from('videos').update({ likes: likesCount, liked_by: likedBy }).eq('id', videoId);
-            loadVideos(); 
-        }
-
-        async function toggleVideoComments(videoId) {
-            const box = document.getElementById(`video-comments-box-${videoId}`);
-            if (box.style.display === 'none') { 
-                box.style.display = 'block'; 
-                loadVideoComments(videoId); 
-            } else { 
-                box.style.display = 'none'; 
-            }
-        }
-
-        async function loadVideoComments(videoId) {
-            const listEl = document.getElementById(`video-comments-list-${videoId}`);
-            if(!listEl) return;
-            
-            const { data: comments } = await _supabase.from('video_comments').select('*').eq('video_id', videoId).order('created_at', { ascending: true });
-            
-            if(!comments || comments.length === 0) { 
-                listEl.innerHTML = '<span class="text-sub" style="font-size:11px;">Коментарів поки немає.</span>'; 
-                return; 
-            }
-
-            const authorIds = [...new Set(comments.map(c => c.author_id))];
-            const { data: users } = await _supabase.from('users').select('id_number, nickname, avatar_url, is_verified, is_admin').in('id_number', authorIds);
-            if(users) users.forEach(u => userCache[u.id_number] = u);
-
-            listEl.innerHTML = comments.map(c => {
-                const user = userCache[c.author_id] || { nickname: `ID ${c.author_id}`, avatar_url: DEFAULT_AVATAR };
-                const canDelete = (c.author_id == myId || myIsAdmin);
-                let b = user.is_verified ? `<span style="color:var(--verified); font-size:10px;">[v]</span>` : '';
-
-                return `
-                    <div style="padding:6px; border-bottom:1px dashed #DDD; display:flex; gap:8px;">
-                        <img src="${user.avatar_url || DEFAULT_AVATAR}" class="avatar-sm" style="cursor:pointer;" onclick="viewProfile('${c.author_id}')">
-                        <div style="flex:1;">
-                            <div style="font-size:11px; font-weight:bold; margin-bottom:2px;">
-                                <a onclick="viewProfile('${c.author_id}')">${user.nickname}</a> ${b}
-                            </div>
-                            <div style="font-size:12px;">${parseContent(c.text)}</div>
-                        </div>
-                        ${canDelete ? `<a style="color:var(--danger); font-size:10px; cursor:pointer;" onclick="deleteVideoComment('${c.id}', '${videoId}')">[x]</a>` : ''}
-                    </div>
-                `;
-            }).join('');
-        }
-
-        async function addVideoComment(videoId) {
-            if (myRestrictPosts) { alert("Вам обмежено можливість писати коментарі."); return; }
-            const inp = document.getElementById(`video-comment-input-${videoId}`);
-            const text = inp.value.trim();
-            if(!text) return;
-            
-            await _supabase.from('video_comments').insert([{ video_id: videoId, author_id: String(myId), text: text }]);
-            inp.value = ''; 
-            loadVideoComments(videoId);
-        }
-
-        async function deleteVideoComment(commentId, videoId) {
-            if(!confirm("Видалити цей коментар?")) return;
-            await _supabase.from('video_comments').delete().eq('id', commentId);
-            loadVideoComments(videoId);
-        }
-
-        /* =========================================
-           ФУНКЦІОНАЛ ВБУДОВАНОГО ПОШТОВОГО КЛІЄНТА ✉️
-           ========================================= */
+        async function deleteVideo(id) { if(confirm("Видалити це відео?")) { await _supabase.from('videos').delete().eq('id', id); loadVideos(); } }
+        async function toggleVideoLike(videoId) { const { data: video } = await _supabase.from('videos').select('likes, liked_by').eq('id', videoId).single(); if (!video) return; let likedBy = video.liked_by || []; let likesCount = parseInt(video.likes) || 0; const uid = String(myId); if (likedBy.includes(uid)) { likedBy = likedBy.filter(i => i !== uid); likesCount = Math.max(0, likesCount - 1); } else { likedBy.push(uid); likesCount++; } await _supabase.from('videos').update({ likes: likesCount, liked_by: likedBy }).eq('id', videoId); loadVideos(); }
 
         function showMailClient() {
-            clearMainArea(); 
-            switchTab('col-main'); // Перемикання для мобільної версії
+            clearMainArea(); switchTab('col-main'); 
             const wall = document.getElementById('wall-posts');
-            
             let emailStatusHTML = '';
-            
             if (!myInternalEmail) {
-                emailStatusHTML = `
-                    <div class="glass-panel card" style="background: #FFFBE6; border: 1px solid #F5E8A3; margin-bottom: 12px;">
-                        <span class="section-title">Реєстрація поштової скриньки</span>
-                        <p style="margin-bottom: 10px; line-height: 1.4;">У вас ще немає внутрішньої пошти. Створіть унікальну адресу вигляду <b>ім'я@spilkuvania.com</b> для офіційного листування всередині мережі.</p>
-                        <div style="display: flex; gap: 4px; align-items: center;">
-                            <input type="text" id="mail-prefix-input" placeholder="Введіть префікс (наприклад: alex)" style="margin:0; flex: 1;">
-                            <b style="font-size: 12px; padding: 0 5px;">@spilkuvania.com</b>
-                        </div>
-                        <button class="btn-primary mt-15" onclick="createInternalEmail()">Створити e-mail</button>
-                    </div>
-                `;
+                emailStatusHTML = `<div class="glass-panel card" style="background: #FFFBE6; border: 1px solid #F5E8A3; margin-bottom: 12px;"><span class="section-title">Реєстрація поштової скриньки</span><p style="margin-bottom: 10px; line-height: 1.4;">Створіть унікальну адресу вигляду <b>ім'я@spilkuvania.com</b></p><div style="display: flex; gap: 4px; align-items: center;"><input type="text" id="mail-prefix-input" placeholder="Введіть префікс (наприклад: alex)" style="margin:0; flex: 1;"><b style="font-size: 12px; padding: 0 5px;">@spilkuvania.com</b></div><button class="btn-primary mt-15" onclick="createInternalEmail()">Створити e-mail</button></div>`;
             } else {
-                emailStatusHTML = `
-                    <div class="glass-panel card" style="background: #F4F8FC; border: 1px solid #8FA6C3; margin-bottom: 12px;">
-                        <span class="section-title">Ваша адреса</span>
-                        <div style="font-size: 12px; font-weight: bold; color: var(--primary); padding: 4px 0;">
-                              Поточна скринька: <span style="text-decoration: underline; color: var(--danger);">${myInternalEmail}</span>
-                        </div>
-                    </div>
-                `;
+                emailStatusHTML = `<div class="glass-panel card" style="background: #F4F8FC; border: 1px solid #8FA6C3; margin-bottom: 12px;"><span class="section-title">Ваша адреса</span><div style="font-size: 12px; font-weight: bold; color: var(--primary); padding: 4px 0;">Поточна скринька: <span style="text-decoration: underline; color: var(--danger);">${myInternalEmail}</span></div></div>`;
             }
-
-            wall.innerHTML = `
-                <div class="tab-header">Вбудований поштовий клієнт</div>
-                ${emailStatusHTML}
-                
-                <div id="mail-client-workspace" style="${myInternalEmail ? '' : 'display: none;'}">
-                    <div class="glass-panel card" style="background: #F0F4F9; border: 1px solid var(--glass-border); margin-bottom: 12px;">
-                        <span class="section-title">Надіслати нового листа</span>
-                        
-                        <label class="form-label">Кому (Адреса у форматі prefix@spilkuvania.com)</label>
-                        <input type="text" id="mail-to-input" placeholder="someone@spilkuvania.com">
-                        
-                        <label class="form-label">Тема листа</label>
-                        <input type="text" id="mail-subject-input" placeholder="Введіть тему повідомлення...">
-                        
-                        <label class="form-label">Текст листа</label>
-                        <textarea id="mail-body-input" rows="4" placeholder="Напишіть текст офіційного листа..."></textarea>
-                        
-                        <button class="btn-primary mt-15" onclick="sendSocialEmail()">Надіслати листа</button>
-                    </div>
-
-                    <div class="glass-panel card">
-                        <div style="display:flex; justify-content: space-between; align-items:center; margin-bottom: 10px; border-bottom: 1px solid var(--glass-border); padding-bottom: 4px;">
-                            <b style="color: var(--link-color);">Скринька «Вхідні»</b>
-                            <button class="btn-secondary" style="width:auto; padding: 2px 8px; font-size:10px;" onclick="loadInboxEmails()">Оновити</button>
-                        </div>
-                        <div id="inbox-emails-list" class="scroll-area" style="max-height: 400px; display:flex; flex-direction:column; gap:8px;">
-                            Завантаження повідомлень...
-                        </div>
-                    </div>
-                </div>
-            `;
-
-            if (myInternalEmail) {
-                loadInboxEmails();
-            }
+            wall.innerHTML = `<div class="tab-header">Вбудований поштовий клієнт</div>${emailStatusHTML}<div id="mail-client-workspace" style="${myInternalEmail ? '' : 'display: none;'}"><div class="glass-panel card" style="background: #F0F4F9; border: 1px solid var(--glass-border); margin-bottom: 12px;"><span class="section-title">Надіслати нового листа</span><label class="form-label">Кому</label><input type="text" id="mail-to-input" placeholder="someone@spilkuvania.com"><label class="form-label">Тема листа</label><input type="text" id="mail-subject-input"><label class="form-label">Текст листа</label><textarea id="mail-body-input" rows="4"></textarea><button class="btn-primary mt-15" onclick="sendSocialEmail()">Надіслати листа</button></div><div class="glass-panel card"><div style="display:flex; justify-content: space-between; align-items:center; margin-bottom: 10px; border-bottom: 1px solid var(--glass-border); padding-bottom: 4px;"><b style="color: var(--link-color);">Скринька «Вхідні»</b><button class="btn-secondary" style="width:auto; padding: 2px 8px; font-size:10px;" onclick="loadInboxEmails()">Оновити</button></div><div id="inbox-emails-list" class="scroll-area" style="max-height: 400px; display:flex; flex-direction:column; gap:8px;">Завантаження повідомлень...</div></div></div>`;
+            if (myInternalEmail) loadInboxEmails();
         }
 
         async function createInternalEmail() {
-            const prefixInput = document.getElementById('mail-prefix-input');
-            if (!prefixInput) return;
-            const prefix = prefixInput.value.trim().toLowerCase();
-            
-            if (!prefix) {
-                alert("Будь ласка, введіть бажане ім'я для пошти!");
-                return;
-            }
-            
-            const regex = /^[a-z0-9._-]+$/;
-            if (!regex.test(prefix)) {
-                alert("Префікс може містити лише латинські літери, цифри, крапки та дефіси!");
-                return;
-            }
-            
+            const prefix = document.getElementById('mail-prefix-input').value.trim().toLowerCase();
+            if (!prefix) return;
             const fullEmail = prefix + '@spilkuvania.com';
-            
-            const { data: checkEmail } = await _supabase
-                .from('users')
-                .select('id_number')
-                .eq('internal_email', fullEmail);
-                
-            if (checkEmail && checkEmail.length > 0) {
-                alert("Ця поштова адреса вже зайнята іншим користувачем!");
-                return;
-            }
-            
-            const { error } = await _supabase
-                .from('users')
-                .update({ internal_email: fullEmail })
-                .eq('id_number', myId);
-                
-            if (error) {
-                alert("Помилка створення пошти: " + error.message);
-                return;
-            }
-            
-            myInternalEmail = fullEmail;
-            alert("Вітаємо! Ваш поштовий ящик успішно активовано: " + fullEmail);
-            showMailClient();
+            const { data: checkEmail } = await _supabase.from('profiles').select('id').eq('internal_email', fullEmail);
+            if (checkEmail && checkEmail.length > 0) { alert("Ця поштова адреса вже зайнята іншим користувачем!"); return; }
+            await _supabase.from('profiles').update({ internal_email: fullEmail }).eq('id', myId);
+            myInternalEmail = fullEmail; alert("Вітаємо! Ваш поштовий ящик успішно активовано."); showMailClient();
         }
 
         async function sendSocialEmail() {
-            if (!myInternalEmail) {
-                alert("Вам необхідно спочатку створити власну пошту @spilkuvania.com для відправки повідомлень!");
-                return;
-            }
-            
-            const toInput = document.getElementById('mail-to-input');
-            const subjectInput = document.getElementById('mail-subject-input');
-            const bodyInput = document.getElementById('mail-body-input');
-            
-            const receiverEmail = toInput.value.trim().toLowerCase();
-            const subject = subjectInput.value.trim();
-            const body = bodyInput.value.trim();
-            
-            if (!receiverEmail || !body) {
-                alert("Поля «Кому» та «Текст листа» є обов'язковими!");
-                return;
-            }
-            
-            if (!receiverEmail.endsWith('@spilkuvania.com')) {
-                alert("Помилка: Цей клієнт підтримує відправку листів тільки всередині домену @spilkuvania.com!");
-                return;
-            }
-            
-            if (receiverEmail === myInternalEmail) {
-                alert("Ви не можете надіслати листа самому собі!");
-                return;
-            }
-            
-            const { data: recipient } = await _supabase
-                .from('users')
-                .select('nickname')
-                .eq('internal_email', receiverEmail)
-                .single();
-                
-            if (!recipient) {
-                alert("Користувача з адресою " + receiverEmail + " не знайдено в базі даних соцмережі!");
-                return;
-            }
-            
-            const { error } = await _supabase
-                .from('social_mail')
-                .insert([{
-                    sender_email: myInternalEmail,
-                    receiver_email: receiverEmail,
-                    subject: subject || '(Без теми)',
-                    body: body
-                }]);
-                
-            if (error) {
-                alert("Не вдалося надіслати повідомлення: " + error.message);
-                return;
-            }
-            
-            alert("Лист успішно надіслано користувачу " + recipient.nickname + "!");
-            toInput.value = '';
-            subjectInput.value = '';
-            bodyInput.value = '';
+            if (!myInternalEmail) return;
+            const receiverEmail = document.getElementById('mail-to-input').value.trim().toLowerCase();
+            const subject = document.getElementById('mail-subject-input').value.trim();
+            const body = document.getElementById('mail-body-input').value.trim();
+            if (!receiverEmail || !body) return;
+            const { data: recipient } = await _supabase.from('profiles').select('nickname').eq('internal_email', receiverEmail).single();
+            if (!recipient) { alert("Користувача не знайдено!"); return; }
+            await _supabase.from('social_mail').insert([{ sender_email: myInternalEmail, receiver_email: receiverEmail, subject: subject || '(Без теми)', body: body }]);
+            alert("Лист успішно надіслано!"); document.getElementById('mail-to-input').value = ''; document.getElementById('mail-subject-input').value = ''; document.getElementById('mail-body-input').value = '';
         }
 
         async function loadInboxEmails() {
-            const listEl = document.getElementById('inbox-emails-list');
-            if (!listEl) return;
-            if (!myInternalEmail) return;
-            
-            const { data: emails, error } = await _supabase
-                .from('social_mail')
-                .select('*')
-                .eq('receiver_email', myInternalEmail)
-                .order('created_at', { ascending: false });
-                
-            if (error) {
-                listEl.innerHTML = `<div style="color:var(--danger)">Помилка завантаження: ${error.message}</div>`;
-                return;
-            }
-            
-            if (!emails || emails.length === 0) {
-                listEl.innerHTML = `<div style="padding:12px; color:var(--text-sub); text-align:center;">Ваша поштова скринька порожня.</div>`;
-                return;
-            }
-            
-            listEl.innerHTML = emails.map(mail => {
-                const dateStr = new Date(mail.created_at).toLocaleString();
-                const bgStyle = mail.is_read ? '#FFFFFF' : '#FFFBE6';
-                const borderStyle = mail.is_read ? '1px solid #CCC' : '1px solid #F5E8A3';
-                
-                return `
-                    <div class="list-item" style="flex-direction: column; align-items: flex-start; background: ${bgStyle}; border: ${borderStyle}; padding: 8px; margin-bottom: 4px; cursor: default;">
-                        <div style="display:flex; justify-content:space-between; width:100%; border-bottom: 1px dashed #CCC; padding-bottom:4px; margin-bottom:6px; font-size:10px; color:var(--text-sub);">
-                            <span><b>Від:</b> ${escapeHtml(mail.sender_email)}</span>
-                            <span>${dateStr}</span>
-                        </div>
-                        <div style="font-weight: bold; font-size: 11px; margin-bottom: 4px; color: var(--link-color);">
-                            Тема: ${escapeHtml(mail.subject)}
-                        </div>
-                        <div style="font-size: 11px; line-height: 1.4; white-space: pre-wrap; width: 100%; word-wrap: break-word; color:#000;">${escapeHtml(mail.body)}</div>
-                        
-                        ${!mail.is_read ? `
-                            <div style="text-align: right; width: 100%; margin-top: 6px;">
-                                <button class="btn-secondary" style="width:auto; font-size:9px; padding:2px 6px;" onclick="markEmailAsRead(${mail.id})">Читати</button>
-                            </div>
-                        ` : ''}
-                    </div>
-                `;
-            }).join('');
+            const listEl = document.getElementById('inbox-emails-list'); if (!myInternalEmail) return;
+            const { data: emails } = await _supabase.from('social_mail').select('*').eq('receiver_email', myInternalEmail).order('created_at', { ascending: false });
+            if (!emails || emails.length === 0) { listEl.innerHTML = `<div style="padding:12px; color:var(--text-sub); text-align:center;">Порожня скринька.</div>`; return; }
+            listEl.innerHTML = emails.map(mail => `<div class="list-item" style="flex-direction: column; align-items: flex-start; background: ${mail.is_read?'#FFFFFF':'#FFFBE6'}; border: ${mail.is_read?'1px solid #CCC':'1px solid #F5E8A3'}; padding: 8px; margin-bottom: 4px; cursor: default;"><div style="display:flex; justify-content:space-between; width:100%; border-bottom: 1px dashed #CCC; padding-bottom:4px; margin-bottom:6px; font-size:10px; color:var(--text-sub);"><span><b>Від:</b> ${escapeHtml(mail.sender_email)}</span><span>${new Date(mail.created_at).toLocaleString()}</span></div><div style="font-weight: bold; font-size: 11px; margin-bottom: 4px; color: var(--link-color);">Тема: ${escapeHtml(mail.subject)}</div><div style="font-size: 11px; line-height: 1.4; white-space: pre-wrap; width: 100%; word-wrap: break-word; color:#000;">${escapeHtml(mail.body)}</div>${!mail.is_read ? `<div style="text-align: right; width: 100%; margin-top: 6px;"><button class="btn-secondary" style="width:auto; font-size:9px; padding:2px 6px;" onclick="markEmailAsRead(${mail.id})">Читати</button></div>` : ''}</div>`).join('');
         }
-
-        async function markEmailAsRead(mailId) {
-            await _supabase.from('social_mail').update({ is_read: true }).eq('id', mailId);
-            loadInboxEmails();
-        }
-
-        function escapeHtml(text) {
-            if (!text) return '';
-            return text
-                .replace(/&/g, "&amp;")
-                .replace(/</g, "&lt;")
-                .replace(/>/g, "&gt;")
-                .replace(/"/g, "&quot;")
-                .replace(/'/g, "&#039;");
-        }
-
-        /* =========================================
-           ФУНКЦІОНАЛ ПУБЛІЧНИХ КАНАЛІВ 📢
-           ========================================= */
+        async function markEmailAsRead(mailId) { await _supabase.from('social_mail').update({ is_read: true }).eq('id', mailId); loadInboxEmails(); }
+        function escapeHtml(text) { if (!text) return ''; return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;"); }
 
         function showChannelsList() {
-            clearMainArea();
-            const wall = document.getElementById('wall-posts');
-            wall.innerHTML = `
-                <div class="tab-header">Публічні канали</div>
-                
-                <div class="flex-row" style="margin-bottom: 12px;">
-                    <input type="text" id="channel-search-query" placeholder="Пошук каналів..." style="margin:0;" onkeyup="if(event.keyCode===13) searchChannels()">
-                    <button class="btn-secondary" style="width:auto; min-width:80px;" onclick="searchChannels()">Знайти</button>
-                </div>
-
-                <button class="btn-dashed" style="width: 100%; margin-bottom: 12px; padding: 10px;" onclick="showChannelCreationForm()">+ Створити свій канал</button>
-                
-                <div id="channels-feed" class="scroll-area">Завантаження...</div>
-            `;
+            clearMainArea(); const wall = document.getElementById('wall-posts');
+            wall.innerHTML = `<div class="tab-header">Публічні канали</div><div class="flex-row" style="margin-bottom: 12px;"><input type="text" id="channel-search-query" placeholder="Пошук каналів..." style="margin:0;"><button class="btn-secondary" style="width:auto; min-width:80px;" onclick="searchChannels()">Знайти</button></div><button class="btn-dashed" style="width: 100%; margin-bottom: 12px; padding: 10px;" onclick="showChannelCreationForm()">+ Створити свій канал</button><div id="channels-feed" class="scroll-area">Завантаження...</div>`;
             loadChannels();
         }
-
         function showChannelCreationForm() {
             const wall = document.getElementById('wall-posts');
-            wall.innerHTML = `
-                <div class="tab-header">Створення каналу</div>
-                <div class="glass-panel card" style="background: #F4F8FC;">
-                    <label class="form-label">Назва каналу</label>
-                    <input type="text" id="chan-name" placeholder="Моя крута група">
-                    
-                    <label class="form-label">Опис</label>
-                    <textarea id="chan-desc" rows="2" placeholder="Про що цей канал?"></textarea>
-                    
-                    <label class="form-label">Тип каналу</label>
-                    <select id="chan-type">
-                        <option value="mixed">Паблік (Усе разом)</option>
-                        <option value="blog">Тільки Блог (Текст/Фото)</option>
-                        <option value="video">Тільки Відео</option>
-                    </select>
-                    
-                    <label class="form-label">URL Аватарки</label>
-                    <input type="text" id="chan-avatar" placeholder="http://...">
-                    
-                    <label class="form-label">URL Банера</label>
-                    <input type="text" id="chan-banner" placeholder="http://...">
-                    
-                    <label class="form-label">Приватність</label>
-                    <select id="chan-private" onchange="toggleChanPrivateFields()">
-                        <option value="false">Для всіх (Відкритий)</option>
-                        <option value="true">Приватний (Тільки за ID)</option>
-                    </select>
-                    <input type="text" id="chan-viewers" placeholder="ID глядачів через кому (наприклад: 1, 5, 12)" style="display:none; margin-top:5px;">
-                    
-                    <label class="form-label mt-15">Хто може публікувати пости?</label>
-                    <input type="text" id="chan-posters" placeholder="ID редакторів через кому (залиште пустим, якщо тільки ви)">
-                    
-                    <button class="btn-primary mt-15" onclick="createChannel()">Створити канал</button>
-                    <button class="btn-secondary mt-15" onclick="showChannelsList()">Скасувати</button>
-                </div>
-            `;
+            wall.innerHTML = `<div class="tab-header">Створення каналу</div><div class="glass-panel card" style="background: #F4F8FC;"><label class="form-label">Назва каналу</label><input type="text" id="chan-name"><label class="form-label">Опис</label><textarea id="chan-desc" rows="2"></textarea><label class="form-label">Тип каналу</label><select id="chan-type"><option value="mixed">Паблік</option><option value="blog">Тільки Блог</option><option value="video">Тільки Відео</option></select><label class="form-label">URL Аватарки</label><input type="text" id="chan-avatar"><label class="form-label">URL Банера</label><input type="text" id="chan-banner"><label class="form-label">Приватність</label><select id="chan-private" onchange="toggleChanPrivateFields()"><option value="false">Для всіх</option><option value="true">Приватний</option></select><input type="text" id="chan-viewers" placeholder="UUID глядачів через кому" style="display:none; margin-top:5px;"><label class="form-label mt-15">Хто може публікувати пости?</label><input type="text" id="chan-posters" placeholder="UUID редакторів через кому"><button class="btn-primary mt-15" onclick="createChannel()">Створити канал</button><button class="btn-secondary mt-15" onclick="showChannelsList()">Скасувати</button></div>`;
         }
-
-        function toggleChanPrivateFields() {
-            const isPrivate = document.getElementById('chan-private').value === "true";
-            document.getElementById('chan-viewers').style.display = isPrivate ? "block" : "none";
-        }
-
+        function toggleChanPrivateFields() { document.getElementById('chan-viewers').style.display = document.getElementById('chan-private').value === "true" ? "block" : "none"; }
         async function createChannel() {
-            const name = document.getElementById('chan-name').value.trim();
-            if (!name) { alert("Введіть назву каналу!"); return; }
-            
-            const type = document.getElementById('chan-type').value;
+            const name = document.getElementById('chan-name').value.trim(); if (!name) return;
             const isPrivate = document.getElementById('chan-private').value === "true";
-            
             const viewers = isPrivate ? document.getElementById('chan-viewers').value.split(',').map(s=>s.trim()).filter(s=>s) : [];
             const posters = document.getElementById('chan-posters').value.split(',').map(s=>s.trim()).filter(s=>s);
-            
-            await _supabase.from('channels').insert([{
-                owner_id: String(myId),
-                name: name,
-                description: document.getElementById('chan-desc').value.trim(),
-                type: type,
-                avatar_url: document.getElementById('chan-avatar').value.trim() || DEFAULT_AVATAR,
-                banner_url: document.getElementById('chan-banner').value.trim(),
-                is_private: isPrivate,
-                allowed_viewers: viewers,
-                allowed_posters: posters
-            }]);
-            
+            await _supabase.from('channels').insert([{ owner_id: String(myId), name: name, description: document.getElementById('chan-desc').value.trim(), type: document.getElementById('chan-type').value, avatar_url: document.getElementById('chan-avatar').value.trim() || DEFAULT_AVATAR, banner_url: document.getElementById('chan-banner').value.trim(), is_private: isPrivate, allowed_viewers: viewers, allowed_posters: posters }]);
             showChannelsList();
         }
-
-        async function loadChannels() {
-            const feed = document.getElementById('channels-feed');
-            const { data: channels } = await _supabase.from('channels').select('*').order('created_at', { ascending: false });
-            renderChannelsFeed(channels, feed);
-        }
-
-        async function searchChannels() {
-            const q = document.getElementById('channel-search-query').value.trim();
-            const feed = document.getElementById('channels-feed');
-            feed.innerHTML = '<div style="text-align:center; padding: 20px;">Шукаємо...</div>';
-            
-            let query = _supabase.from('channels').select('*').order('created_at', { ascending: false });
-            if (q) query = query.ilike('name', `%${q}%`);
-            
-            const { data: channels } = await query;
-            renderChannelsFeed(channels, feed);
-        }
-
+        async function loadChannels() { const feed = document.getElementById('channels-feed'); const { data: channels } = await _supabase.from('channels').select('*').order('created_at', { ascending: false }); renderChannelsFeed(channels, feed); }
         function renderChannelsFeed(channels, feed) {
-            if (!channels || channels.length === 0) {
-                feed.innerHTML = '<div class="text-sub">Каналів не знайдено.</div>'; return;
-            }
-            
-            feed.innerHTML = channels.map(c => {
-                // Перевірка видимості приватних каналів
-                if (c.is_private && c.owner_id !== String(myId) && !(c.allowed_viewers || []).includes(String(myId)) && !myIsAdmin) return '';
-                
-                const typeLabel = c.type === 'video' ? '  Відео' : (c.type === 'blog' ? '  Блог' : '  Паблік');
-                return `
-                    <div class="list-item glass-panel card" style="margin-bottom: 10px; cursor: pointer; align-items: flex-start;" onclick="viewChannel('${c.id}')">
-                        <img src="${c.avatar_url}" class="avatar-md">
-                        <div>
-                            <b style="font-size: 13px;">${c.name}</b> <span class="channel-badge">${typeLabel}</span>
-                            ${c.is_private ? '<span class="channel-badge" style="background:#D00000;">Приватний</span>' : ''}
-                            <br>
-                            <span class="text-sub" style="font-size: 11px;">${c.description ? c.description.substring(0, 50) + '...' : 'Без опису'}</span>
-                        </div>
-                    </div>
-                `;
-            }).join('');
+            if (!channels || channels.length === 0) { feed.innerHTML = '<div class="text-sub">Каналів не знайдено.</div>'; return; }
+            feed.innerHTML = channels.map(c => { if (c.is_private && c.owner_id !== String(myId) && !(c.allowed_viewers || []).includes(String(myId)) && !myIsAdmin) return ''; return `<div class="list-item glass-panel card" style="margin-bottom: 10px; cursor: pointer; align-items: flex-start;" onclick="viewChannel('${c.id}')"><img src="${c.avatar_url}" class="avatar-md"><div><b style="font-size: 13px;">${c.name}</b> <span class="channel-badge">${c.type}</span><br><span class="text-sub" style="font-size: 11px;">${c.description ? c.description.substring(0, 50) + '...' : 'Без опису'}</span></div></div>`; }).join('');
         }
-
         async function viewChannel(channelId) {
-            clearMainArea();
-            const wall = document.getElementById('wall-posts');
-            wall.innerHTML = '<div style="text-align:center; padding:20px;">Завантаження каналу...</div>';
-            
-            const { data: channel } = await _supabase.from('channels').select('*').eq('id', channelId).single();
-            if (!channel) return;
-            
-            // Перевірка доступу
-            if (channel.is_private && channel.owner_id !== String(myId) && !(channel.allowed_viewers || []).includes(String(myId)) && !myIsAdmin) {
-                wall.innerHTML = '<div class="glass-panel card" style="text-align:center; color:var(--danger); padding:20px;"><b>Доступ заборонено. Це приватний канал.</b></div>';
-                return;
-            }
-
-            // Завантаження статусу підписки та кількості підписників
-            const { data: subData } = await _supabase.from('channel_subscriptions').select('*').eq('user_id', String(myId)).eq('channel_id', channelId).single();
-            const isSubbed = !!subData;
-            const { count: subCount } = await _supabase.from('channel_subscriptions').select('*', { count: 'exact' }).eq('channel_id', channelId);
-
-            const canPost = channel.owner_id === String(myId) || (channel.allowed_posters || []).includes(String(myId)) || myIsAdmin;
-            const bannerHtml = channel.banner_url ? `<img src="${channel.banner_url}" class="channel-banner">` : `<div class="channel-banner" style="background: var(--primary-grad);"></div>`;
-
-            let postFormHtml = '';
-            if (canPost) {
-                postFormHtml = `<div class="glass-panel card" style="background: #F0F4F9; margin-top: 12px;">`;
-                if (channel.type === 'blog' || channel.type === 'mixed') {
-                    postFormHtml += `<label class="form-label">Текст посту (Блог)</label><textarea id="c-post-text" rows="3" placeholder="Що нового?"></textarea>`;
-                }
-                if (channel.type === 'video' || channel.type === 'mixed') {
-                    postFormHtml += `<label class="form-label mt-15">Відео (URL .mp4)</label><input type="text" id="c-post-video" placeholder="https://.../video.mp4"><label class="form-label">Назва відео</label><input type="text" id="c-post-title" placeholder="Круте відео">`;
-                }
-                postFormHtml += `<button class="btn-primary mt-15" onclick="createChannelPost('${channel.id}', '${channel.type}')">Опублікувати на каналі</button></div>`;
-            }
-
-            wall.innerHTML = `
-                <div class="glass-panel card" style="padding: 0; overflow: visible;">
-                    ${bannerHtml}
-                    <div class="channel-header-info">
-                        <img src="${channel.avatar_url}" class="channel-avatar">
-                        <h2 style="margin-bottom: 5px; color: var(--primary);">${channel.name} ${channel.is_private ? 'Приватний' : ''}</h2>
-                        <div class="text-sub" style="font-size:11px; margin-bottom:5px;">Підписників: <b style="color:var(--primary)">${subCount || 0}</b> | Тип: ${channel.type}</div>
-                        <p style="font-size: 12px; line-height:1.4; margin-bottom: 10px;">${channel.description || ''}</p>
-                        <button class="${isSubbed ? 'btn-secondary' : 'btn-primary'}" style="width:auto;" onclick="toggleChannelSub('${channel.id}', ${isSubbed})">
-                            ${isSubbed ? 'Відписатися' : 'Підписатися'}
-                        </button>
-                    </div>
-                </div>
-                ${postFormHtml}
-                <div id="channel-posts-feed" class="mt-20">Завантаження контенту...</div>
-            `;
-            
-            loadChannelPosts(channel.id);
+            clearMainArea(); const wall = document.getElementById('wall-posts');
+            const { data: channel } = await _supabase.from('channels').select('*').eq('id', channelId).single(); if (!channel) return;
+            const { data: subData } = await _supabase.from('channel_subscriptions').select('*').eq('user_id', String(myId)).eq('channel_id', channelId).single(); const isSubbed = !!subData;
+            wall.innerHTML = `<div class="glass-panel card" style="padding: 0; overflow: visible;"><img src="${channel.banner_url || DEFAULT_AVATAR}" class="channel-banner"><div class="channel-header-info"><img src="${channel.avatar_url}" class="channel-avatar"><h2 style="margin-bottom: 5px; color: var(--primary);">${channel.name}</h2><button class="${isSubbed ? 'btn-secondary' : 'btn-primary'}" style="width:auto;" onclick="toggleChannelSub('${channel.id}', ${isSubbed})">${isSubbed ? 'Відписатися' : 'Підписатися'}</button></div></div>`;
         }
-
-        async function createChannelPost(channelId, cType) {
-            let type = 'text';
-            let content = '';
-            let mediaUrl = '';
-
-            const textEl = document.getElementById('c-post-text');
-            const vidEl = document.getElementById('c-post-video');
-            const titleEl = document.getElementById('c-post-title');
-
-            if (cType === 'video' || (cType === 'mixed' && vidEl && vidEl.value.trim())) {
-                type = 'video';
-                mediaUrl = vidEl.value.trim();
-                content = titleEl.value.trim() || 'Без назви';
-                if(!mediaUrl) { alert("Вкажіть URL відео!"); return; }
-            } else if (cType === 'blog' || (cType === 'mixed' && textEl && textEl.value.trim())) {
-                type = 'text';
-                content = textEl.value.trim();
-                if(!content) { alert("Вкажіть текст посту!"); return; }
-            } else {
-                alert("Заповніть дані для публікації!"); return;
-            }
-
-            await _supabase.from('channel_posts').insert([{
-                channel_id: channelId,
-                author_id: String(myId),
-                post_type: type,
-                content: content,
-                media_url: mediaUrl
-            }]);
-
-            viewChannel(channelId);
-        }
-
-        async function loadChannelPosts(channelId) {
-            const feed = document.getElementById('channel-posts-feed');
-            const { data: posts } = await _supabase.from('channel_posts').select('*').eq('channel_id', channelId).order('created_at', { ascending: false });
-            
-            if (!posts || posts.length === 0) {
-                feed.innerHTML = '<div class="text-sub" style="text-align:center;">На цьому каналі поки немає записів.</div>'; return;
-            }
-
-            // Збираємо імена авторів
-            const authorIds = [...new Set(posts.map(p => p.author_id))];
-            const { data: users } = await _supabase.from('users').select('id_number, nickname').in('id_number', authorIds);
-            if(users) users.forEach(u => userCache[u.id_number] = u);
-
-            feed.innerHTML = posts.map(p => {
-                const isLiked = (p.liked_by || []).includes(String(myId));
-                const authorName = userCache[p.author_id] ? userCache[p.author_id].nickname : `ID ${p.author_id}`;
-                const dateStr = new Date(p.created_at).toLocaleString();
-
-                let contentHtml = '';
-                if (p.post_type === 'video') {
-                    contentHtml = `
-                        <div style="font-weight:bold; font-size:14px; margin-bottom:8px;">${p.content}</div>
-                        <div style="background:#000; text-align:center;">
-                            <video controls style="width:100%; max-height:400px;" onplay="incrementChannelVideoView('${p.id}')">
-                                <source src="${p.media_url}" type="video/mp4">
-                            </video>
-                        </div>
-                    `;
-                } else {
-                    contentHtml = `<div style="font-size:13px; line-height:1.5;">${parseContent(p.content)}</div>`;
-                }
-
-                return `
-                    <div class="post">
-                        <div class="post-header">
-                            <span>Від: <b onclick="viewProfile('${p.author_id}')" style="cursor:pointer; color:var(--link-color);">${authorName}</b></span>
-                            <span class="text-sub">${dateStr}</span>
-                        </div>
-                        <div class="post-body">${contentHtml}</div>
-                        <div class="post-footer" style="justify-content: space-between;">
-                            <div class="flex-row">
-                                <button onclick="toggleChannelPostLike('${p.id}', '${channelId}')" class="btn-like ${isLiked ? 'active' : ''}">&hearts; (${p.likes || 0})</button>
-                                ${p.post_type === 'video' ? `<span class="text-sub" style="font-size:10px; margin-left:10px;">  Переглядів: ${p.views || 0}</span>` : ''}
-                            </div>
-                            <button onclick="toggleChannelComments('${p.id}')" class="btn-secondary" style="width:auto;">Коментарі</button>
-                        </div>
-                        <div id="c-comments-box-${p.id}" style="display:none; padding:12px; border-top:1px solid #EEE; background:#FFF;">
-                            <div id="c-comments-list-${p.id}" style="display:flex; flex-direction:column; gap:8px; margin-bottom:8px;"></div>
-                            <div class="flex-row" style="margin:0;">
-                                <input type="text" id="c-comment-input-${p.id}" placeholder="Коментар..." style="margin:0;">
-                                <button class="btn-primary" style="width:auto;" onclick="addChannelComment('${p.id}')">Відпр.</button>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        // Проста функція для збільшення переглядів відео при натисканні Play
-        async function incrementChannelVideoView(postId) {
-            window.viewedChannelVideos = window.viewedChannelVideos || [];
-            if (window.viewedChannelVideos.includes(postId)) return;
-            
-            window.viewedChannelVideos.push(postId);
-            const { data } = await _supabase.from('channel_posts').select('views').eq('id', postId).single();
-            if (data) {
-                await _supabase.from('channel_posts').update({ views: (data.views || 0) + 1 }).eq('id', postId);
-            }
-        }
-
-        async function toggleChannelPostLike(postId, channelId) {
-            const { data: post } = await _supabase.from('channel_posts').select('likes, liked_by').eq('id', postId).single();
-            if (!post) return;
-            let likedBy = post.liked_by || [];
-            let likesCount = parseInt(post.likes) || 0;
-            const uid = String(myId);
-            
-            if (likedBy.includes(uid)) {
-                likedBy = likedBy.filter(i => i !== uid);
-                likesCount = Math.max(0, likesCount - 1);
-            } else {
-                likedBy.push(uid);
-                likesCount++;
-            }
-            
-            await _supabase.from('channel_posts').update({ likes: likesCount, liked_by: likedBy }).eq('id', postId);
-            loadChannelPosts(channelId);
-        }
-
-        // --- Коментарі для каналів ---
-        async function toggleChannelComments(postId) {
-            const box = document.getElementById(`c-comments-box-${postId}`);
-            if (box.style.display === 'none') { 
-                box.style.display = 'block'; 
-                loadChannelComments(postId); 
-            } else { 
-                box.style.display = 'none'; 
-            }
-        }
-
-        async function loadChannelComments(postId) {
-            const listEl = document.getElementById(`c-comments-list-${postId}`);
-            const { data: comments } = await _supabase.from('channel_comments').select('*').eq('post_id', postId).order('created_at', { ascending: true });
-            
-            if(!comments || comments.length === 0) { 
-                listEl.innerHTML = '<span class="text-sub" style="font-size:11px;">Коментарів поки немає.</span>'; return; 
-            }
-
-            const authorIds = [...new Set(comments.map(c => c.author_id))];
-            const { data: users } = await _supabase.from('users').select('id_number, nickname, avatar_url').in('id_number', authorIds);
-            if(users) users.forEach(u => userCache[u.id_number] = u);
-
-            listEl.innerHTML = comments.map(c => {
-                const user = userCache[c.author_id] || { nickname: `ID ${c.author_id}`, avatar_url: DEFAULT_AVATAR };
-                return `
-                    <div style="padding:6px; border-bottom:1px dashed #DDD; display:flex; gap:8px;">
-                        <img src="${user.avatar_url}" class="avatar-sm" onclick="viewProfile('${c.author_id}')" style="cursor:pointer;">
-                        <div style="flex:1;">
-                            <div style="font-size:11px; font-weight:bold; margin-bottom:2px;"><a onclick="viewProfile('${c.author_id}')">${user.nickname}</a></div>
-                            <div style="font-size:12px;">${parseContent(c.text)}</div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        async function addChannelComment(postId) {
-            if (myRestrictPosts) { alert("Обмеження: Ви не можете писати коментарі."); return; }
-            const inp = document.getElementById(`c-comment-input-${postId}`);
-            const text = inp.value.trim();
-            if(!text) return;
-            
-            await _supabase.from('channel_comments').insert([{ post_id: postId, author_id: String(myId), text: text }]);
-            inp.value = ''; 
-            loadChannelComments(postId);
-        }
-
-        // --- НОВІ ФУНКЦІЇ ДЛЯ ПІДПИСОК ТА РЕКОМЕНДАЦІЙ ---
-
-        async function toggleChannelSub(channelId, currentlySubbed) {
-            if (currentlySubbed) {
-                await _supabase.from('channel_subscriptions').delete().eq('user_id', String(myId)).eq('channel_id', channelId);
-            } else {
-                await _supabase.from('channel_subscriptions').insert([{ user_id: String(myId), channel_id: channelId }]);
-            }
-            viewChannel(channelId); // Перезавантажуємо сторінку каналу для оновлення кнопки та лічильника
-        }
-
+        async function toggleChannelSub(channelId, currentlySubbed) { if (currentlySubbed) await _supabase.from('channel_subscriptions').delete().eq('user_id', String(myId)).eq('channel_id', channelId); else await _supabase.from('channel_subscriptions').insert([{ user_id: String(myId), channel_id: channelId }]); viewChannel(channelId); }
         async function loadRecommendedChannels() {
-            const list = document.getElementById('recommended-channels-list');
-            if (!list) return;
-
-            // Витягуємо 5 публічних каналів
+            const list = document.getElementById('recommended-channels-list'); if (!list) return;
             const { data: channels } = await _supabase.from('channels').select('*').eq('is_private', false).limit(5);
-            
-            if (!channels || channels.length === 0) { 
-                list.innerHTML = '<span class="text-sub">Немає каналів для рекомендації.</span>'; 
-                return; 
-            }
-            
-            list.innerHTML = channels.map(c => `
-                <div class="list-item" onclick="viewChannel('${c.id}')" style="align-items: center;">
-                    <img src="${c.avatar_url}" class="avatar-sm" style="border-radius:3px;">
-                    <div style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:11px;">
-                        <b>${c.name}</b>
-                    </div>
-                </div>
-            `).join('');
+            if (!channels || channels.length === 0) { list.innerHTML = '<span class="text-sub">Немає каналів для рекомендації.</span>'; return; }
+            list.innerHTML = channels.map(c => `<div class="list-item" onclick="viewChannel('${c.id}')" style="align-items: center;"><img src="${c.avatar_url}" class="avatar-sm" style="border-radius:3px;"><div style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:11px;"><b>${c.name}</b></div></div>`).join('');
         }
-
-            // =========================================
-// ЗАХИСТ ВІД КОНСОЛІ ТА ПАРСИНГУ (БАЗОВИЙ РІВЕНЬ)
-// =========================================
-
-(function() {
-    // 1. Блокування правої кнопки миші (Контекстне меню)
-    document.addEventListener('contextmenu', function(e) {
-        e.preventDefault();
-    });
-
-    // 2. Блокування гарячих клавіш розробника (F12, Ctrl+Shift+I, Ctrl+U тощо)
-    document.addEventListener('keydown', function(e) {
-        // F12
-        if (e.key === 'F12' || e.keyCode === 123) {
-            e.preventDefault();
-        }
-        // Ctrl+Shift+I (Windows) / Cmd+Option+I (Mac)
-        if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.keyCode === 73)) {
-            e.preventDefault();
-        }
-        // Ctrl+Shift+J (Консоль)
-        if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'J' || e.key === 'j' || e.keyCode === 74)) {
-            e.preventDefault();
-        }
-        // Ctrl+U / Cmd+U (Перегляд коду сторінки)
-        if ((e.ctrlKey || e.metaKey) && (e.key === 'U' || e.key === 'u' || e.keyCode === 85)) {
-            e.preventDefault();
-        }
-        // Ctrl+Shift+C (Інспектор елементів)
-        if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'C' || e.key === 'c' || e.keyCode === 67)) {
-            e.preventDefault();
-        }
-    });
-
-    // 3. Пастка DevTools (Створює нескінченний цикл дебагера, якщо відкрито консоль)
-    // Увага: може трохи навантажувати процесор, але ефективно блокує роботу в консолі.
-    setInterval(function() {
-        const before = new Date().getTime();
-        debugger; // Браузер зупиниться тут, якщо відкриті інструменти розробника
-        const after = new Date().getTime();
-        
-        // Якщо час між before і after більше 100мс, значить дебагер спрацював
-        if (after - before > 100) {
-            // Очищуємо сторінку і показуємо попередження
-            document.body.innerHTML = "<div style='display:flex; height:100vh; justify-content:center; align-items:center; background:#111; color:red; font-family:sans-serif; text-align:center;'><h2>Порушення безпеки.<br>Будь ласка, закрийте інструменти розробника.</h2></div>";
-            // Або можна примусово викинути з акаунту:
-            // localStorage.clear();
-            // window.location.reload();
-        }
-    }, 1000);
-
-    // 4. Перезапис console.log (ховає вивід від розробників-початківців)
-    console.log = function() {};
-    console.warn = function() {};
-    console.error = function() {};
-    console.info = function() {};
-    console.clear();
-})();
     </script>
 </body>
 </html>
