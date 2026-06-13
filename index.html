@@ -1978,6 +1978,65 @@
                 </div>
             `).join('');
         }
+
+            // =========================================
+// ЗАХИСТ ВІД КОНСОЛІ ТА ПАРСИНГУ (БАЗОВИЙ РІВЕНЬ)
+// =========================================
+
+(function() {
+    // 1. Блокування правої кнопки миші (Контекстне меню)
+    document.addEventListener('contextmenu', function(e) {
+        e.preventDefault();
+    });
+
+    // 2. Блокування гарячих клавіш розробника (F12, Ctrl+Shift+I, Ctrl+U тощо)
+    document.addEventListener('keydown', function(e) {
+        // F12
+        if (e.key === 'F12' || e.keyCode === 123) {
+            e.preventDefault();
+        }
+        // Ctrl+Shift+I (Windows) / Cmd+Option+I (Mac)
+        if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.keyCode === 73)) {
+            e.preventDefault();
+        }
+        // Ctrl+Shift+J (Консоль)
+        if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'J' || e.key === 'j' || e.keyCode === 74)) {
+            e.preventDefault();
+        }
+        // Ctrl+U / Cmd+U (Перегляд коду сторінки)
+        if ((e.ctrlKey || e.metaKey) && (e.key === 'U' || e.key === 'u' || e.keyCode === 85)) {
+            e.preventDefault();
+        }
+        // Ctrl+Shift+C (Інспектор елементів)
+        if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'C' || e.key === 'c' || e.keyCode === 67)) {
+            e.preventDefault();
+        }
+    });
+
+    // 3. Пастка DevTools (Створює нескінченний цикл дебагера, якщо відкрито консоль)
+    // Увага: може трохи навантажувати процесор, але ефективно блокує роботу в консолі.
+    setInterval(function() {
+        const before = new Date().getTime();
+        debugger; // Браузер зупиниться тут, якщо відкриті інструменти розробника
+        const after = new Date().getTime();
+        
+        // Якщо час між before і after більше 100мс, значить дебагер спрацював
+        if (after - before > 100) {
+            // Очищуємо сторінку і показуємо попередження
+            document.body.innerHTML = "<div style='display:flex; height:100vh; justify-content:center; align-items:center; background:#111; color:red; font-family:sans-serif; text-align:center;'><h2>Порушення безпеки.<br>Будь ласка, закрийте інструменти розробника.</h2></div>";
+            // Або можна примусово викинути з акаунту:
+            // localStorage.clear();
+            // window.location.reload();
+        }
+    }, 1000);
+
+    // 4. Перезапис console.log (ховає вивід від розробників-початківців)
+    console.log = function() {};
+    console.warn = function() {};
+    console.error = function() {};
+    console.info = function() {};
+    console.clear();
+})();
     </script>
 </body>
 </html>
