@@ -362,14 +362,19 @@
     <div id="auth-box">
         <div class="glass-panel card-auth">
             <h2 style="margin-bottom: 16px; font-size: 16px; color: var(--primary); border-bottom: 2px solid var(--glass-border); padding-bottom: 5px; text-shadow: 1px 1px 0 #FFF;">Вхід у систему</h2>
-            <label class="form-label">Ваш ID</label>
-            <input type="number" id="my-id-input" placeholder="ID">
+            
+            <label class="form-label">Ваш Email</label>
+            <input type="email" id="my-email-input" placeholder="example@mail.com">
+            
             <label class="form-label">Нікнейм (при реєстрації)</label>
             <input type="text" id="my-nick-input" placeholder="Нікнейм">
+            
             <label class="form-label">Пароль</label>
             <input type="password" id="my-pass-input" placeholder="Пароль">
+            
             <label class="form-label">URL аватара (необов'язково)</label>
             <input type="text" id="my-avatar-input" placeholder="http://...">
+            
             <div class="flex-row mt-15" style="flex-direction: column; gap: 8px;">
                 <button class="btn-primary" onclick="handleAuth('login')">Увійти в акаунт</button>
                 <div style="margin: 4px 0; text-align: center; color: #888; font-size: 10px; font-weight: bold;">-- АБО --</div>
@@ -510,8 +515,8 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        const SUPABASE_URL = 'https://wpgfljymnxpbkygkpugc.supabase.co';
-        const SUPABASE_KEY = 'sb_publishable_JurATvEV1oOXnC1YR5KfEQ_SdPFu69x'; 
+        const SUPABASE_URL = 'https://vfchwxbtyvtwbsfwmmsf.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_xHWWz-075-5RII2I5dRHrg_ese0vhwa'; 
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         let myId, myNick, currentChatId;
@@ -530,13 +535,15 @@
             const savedBg = localStorage.getItem('custom_bg');
             if (savedBg) { document.body.style.backgroundImage = `url('${savedBg}')`; document.body.style.backgroundSize = 'auto'; document.body.style.backgroundRepeat = 'repeat'; }
             
-            const sId = localStorage.getItem('saved_user_id');
-            const sPass = localStorage.getItem('saved_user_pass');
-            if (sId && sPass) {
-                const { data: user } = await _supabase.from('users').select('*').eq('id_number', sId).eq('password', sPass).single();
+            // ПЕРЕВІРКА СЕСІЇ SUPABASE AUTH
+            const { data: { session } } = await _supabase.auth.getSession();
+            
+            if (session) {
+                // Шукаємо профіль у нашій таблиці за auth_id
+                const { data: user } = await _supabase.from('users').select('*').eq('auth_id', session.user.id).single();
                 if (user) { 
                     if(user.is_banned) { alert("Ваш акаунт було заблоковано адміністратором."); logout(); return; }
-                    myId = sId; myNick = user.nickname; myIsAdmin = user.is_admin || false; startApp(user); 
+                    myId = user.id_number; myNick = user.nickname; myIsAdmin = user.is_admin || false; startApp(user); 
                 }
             }
         };
@@ -580,31 +587,75 @@
 
             loadBanners();
             loadGroups(); loadUsers(); viewProfile(myId); initRealtime();
-            loadRecommendedChannels(); // ДОДАНО
+            loadRecommendedChannels(); 
         }
 
         async function handleAuth(mode) {
-            const id = document.getElementById('my-id-input').value.trim();
+            const email = document.getElementById('my-email-input').value.trim();
             const pass = document.getElementById('my-pass-input').value.trim();
             const nick = document.getElementById('my-nick-input').value.trim();
             let av = document.getElementById('my-avatar-input').value.trim() || DEFAULT_AVATAR;
 
+            if (!email || !pass) { alert("Помилка: Email та пароль обов'язкові!"); return; }
+
             if (mode === 'reg') {
                 if (!nick) { alert("Помилка: Нікнейм обов'язковий для реєстрації!"); return; }
-                await _supabase.from('users').insert([{ id_number: id, password: pass, nickname: nick, avatar_url: av, is_admin: false, is_banned: false, is_verified: false, restrict_posts: false, restrict_groups: false, restrict_chat_first: false }]);
+
+                // 1. Реєстрація через Supabase Auth
+                const { data: authData, error: authError } = await _supabase.auth.signUp({
+                    email: email,
+                    password: pass
+                });
+
+                if (authError) { alert("Помилка реєстрації: " + authError.message); return; }
+
+                // 2. Створюємо профіль у таблиці users
+                const customNumericId = Math.floor(Math.random() * 10000000); // Генеруємо випадковий ID (напр. 482910)
+
+                await _supabase.from('users').insert([{ 
+                    id_number: customNumericId, 
+                    auth_id: authData.user.id, // Зв'язуємо запис з Auth
+                    password: 'auth_managed', // Пароль тепер захищений у Supabase Auth
+                    nickname: nick, 
+                    avatar_url: av, 
+                    is_admin: false, 
+                    is_banned: false, 
+                    is_verified: false, 
+                    restrict_posts: false, 
+                    restrict_groups: false, 
+                    restrict_chat_first: false 
+                }]);
+                
+                alert("Реєстрація успішна! Тепер натисніть 'Увійти в акаунт'.");
+                return;
             }
 
-            const { data: user } = await _supabase.from('users').select('*').eq('id_number', id).eq('password', pass).single();
-            if (user) {
-                if(user.is_banned) { alert("Цей акаунт заблоковано!"); return; }
-                myId = id; myNick = user.nickname; myIsAdmin = user.is_admin || false;
-                localStorage.setItem('saved_user_id', id);
-                localStorage.setItem('saved_user_pass', pass);
-                startApp(user);
-            } else alert("Помилка входу! Перевірте дані.");
+            if (mode === 'login') {
+                // 1. Авторизація через Supabase Auth
+                const { data: authData, error: authError } = await _supabase.auth.signInWithPassword({
+                    email: email,
+                    password: pass
+                });
+
+                if (authError) { alert("Помилка входу: перевірте Email та пароль."); return; }
+
+                // 2. Отримання даних профілю
+                const { data: user } = await _supabase.from('users').select('*').eq('auth_id', authData.user.id).single();
+                
+                if (user) {
+                    if(user.is_banned) { alert("Цей акаунт заблоковано!"); return; }
+                    myId = user.id_number; myNick = user.nickname; myIsAdmin = user.is_admin || false;
+                    startApp(user);
+                } else {
+                    alert("Профіль знайдено в Auth, але відсутній в базі users.");
+                }
+            }
         }
 
-        function logout() { localStorage.removeItem('saved_user_id'); localStorage.removeItem('saved_user_pass'); location.reload(); }
+        async function logout() { 
+            await _supabase.auth.signOut(); 
+            location.reload(); 
+        }
 
         function setTheme(theme) {
             if (theme === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
@@ -1346,12 +1397,6 @@
             loadVideoComments(videoId);
         }
 
-        async function deleteVideoComment(commentId, videoId) {
-            if(!confirm("Видалити цей коментар?")) return;
-            await _supabase.from('video_comments').delete().eq('id', commentId);
-            loadVideoComments(videoId);
-        }
-
         /* =========================================
            ФУНКЦІОНАЛ ВБУДОВАНОГО ПОШТОВОГО КЛІЄНТА ✉️
            ========================================= */
@@ -1980,4 +2025,4 @@
         }
     </script>
 </body>
-</html>
+</html>м
