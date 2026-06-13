@@ -362,14 +362,19 @@
     <div id="auth-box">
         <div class="glass-panel card-auth">
             <h2 style="margin-bottom: 16px; font-size: 16px; color: var(--primary); border-bottom: 2px solid var(--glass-border); padding-bottom: 5px; text-shadow: 1px 1px 0 #FFF;">Вхід у систему</h2>
-            <label class="form-label">Ваш ID</label>
-            <input type="number" id="my-id-input" placeholder="ID">
+            
+            <label class="form-label">Email</label>
+            <input type="email" id="my-email-input" placeholder="Ваш Email">
+            
             <label class="form-label">Нікнейм (при реєстрації)</label>
             <input type="text" id="my-nick-input" placeholder="Нікнейм">
+            
             <label class="form-label">Пароль</label>
             <input type="password" id="my-pass-input" placeholder="Пароль">
+            
             <label class="form-label">URL аватара (необов'язково)</label>
             <input type="text" id="my-avatar-input" placeholder="http://...">
+            
             <div class="flex-row mt-15" style="flex-direction: column; gap: 8px;">
                 <button class="btn-primary" onclick="handleAuth('login')">Увійти в акаунт</button>
                 <div style="margin: 4px 0; text-align: center; color: #888; font-size: 10px; font-weight: bold;">-- АБО --</div>
@@ -418,7 +423,7 @@
                             <span id="view-nick"></span> <span id="view-badges"></span>
                         </div>
                         <span id="view-id-label" class="text-sub"></span>
-                        <div style="font-size:11px; margin-top:8px; display: flex; justify-content: center; gap: 12px; color: #555; background: #F9F9F9; padding: 6px; border: 1px solid #E0E0E0;">
+                        <div style="font-size:11px; margin-top:8px; display: justify-content: center; gap: 12px; color: #555; background: #F9F9F9; padding: 6px; border: 1px solid #E0E0E0;">
                             <span>Підписники: <b id="count-followers" style="color:var(--primary)">0</b></span> 
                             <span>Підписки: <b id="count-following" style="color:var(--primary)">0</b></span>
                         </div>
@@ -530,16 +535,41 @@
             const savedBg = localStorage.getItem('custom_bg');
             if (savedBg) { document.body.style.backgroundImage = `url('${savedBg}')`; document.body.style.backgroundSize = 'auto'; document.body.style.backgroundRepeat = 'repeat'; }
             
-            const sId = localStorage.getItem('saved_user_id');
-            const sPass = localStorage.getItem('saved_user_pass');
-            if (sId && sPass) {
-                const { data: user } = await _supabase.from('users').select('*').eq('id_number', sId).eq('password', sPass).single();
-                if (user) { 
-                    if(user.is_banned) { alert("Ваш акаунт було заблоковано адміністратором."); logout(); return; }
-                    myId = sId; myNick = user.nickname; myIsAdmin = user.is_admin || false; startApp(user); 
-                }
+            // 1. Перевіряємо сесію Supabase Auth
+            const { data: { session } } = await _supabase.auth.getSession();
+            if (session) {
+                await loadUserProfile(session.user.email);
             }
+
+            // 2. Слухаємо події логіну/логауту
+            _supabase.auth.onAuthStateChange(async (event, session) => {
+                if (event === 'SIGNED_IN' && session) {
+                    await loadUserProfile(session.user.email);
+                } else if (event === 'SIGNED_OUT') {
+                    document.getElementById('auth-box').style.display = 'flex';
+                    document.getElementById('main-ui').style.display = 'none';
+                    if(document.getElementById('mob-nav')) document.getElementById('mob-nav').style.display = 'none';
+                }
+            });
         };
+
+        // Завантаження профілю з таблиці users за email
+        async function loadUserProfile(email) {
+            const { data: user, error } = await _supabase.from('users').select('*').eq('email', email).single();
+            if (user) { 
+                if(user.is_banned) { 
+                    alert("Ваш акаунт було заблоковано адміністратором."); 
+                    logout(); 
+                    return; 
+                }
+                myId = user.id_number; // Зберігаємо логіку ID
+                myNick = user.nickname; 
+                myIsAdmin = user.is_admin || false; 
+                startApp(user); 
+            } else if (error && error.code !== 'PGRST116') {
+                console.error("Помилка завантаження профілю:", error.message);
+            }
+        }
 
         async function fetchGlobalSettings() {
             const { data } = await _supabase.from('global_settings').select('*').eq('id', 1).single();
@@ -580,31 +610,71 @@
 
             loadBanners();
             loadGroups(); loadUsers(); viewProfile(myId); initRealtime();
-            loadRecommendedChannels(); // ДОДАНО
+            loadRecommendedChannels(); 
         }
 
         async function handleAuth(mode) {
-            const id = document.getElementById('my-id-input').value.trim();
+            const email = document.getElementById('my-email-input').value.trim();
             const pass = document.getElementById('my-pass-input').value.trim();
             const nick = document.getElementById('my-nick-input').value.trim();
             let av = document.getElementById('my-avatar-input').value.trim() || DEFAULT_AVATAR;
 
-            if (mode === 'reg') {
-                if (!nick) { alert("Помилка: Нікнейм обов'язковий для реєстрації!"); return; }
-                await _supabase.from('users').insert([{ id_number: id, password: pass, nickname: nick, avatar_url: av, is_admin: false, is_banned: false, is_verified: false, restrict_posts: false, restrict_groups: false, restrict_chat_first: false }]);
+            if (!email || !pass) {
+                alert("Email та пароль обов'язкові!");
+                return;
             }
 
-            const { data: user } = await _supabase.from('users').select('*').eq('id_number', id).eq('password', pass).single();
-            if (user) {
-                if(user.is_banned) { alert("Цей акаунт заблоковано!"); return; }
-                myId = id; myNick = user.nickname; myIsAdmin = user.is_admin || false;
-                localStorage.setItem('saved_user_id', id);
-                localStorage.setItem('saved_user_pass', pass);
-                startApp(user);
-            } else alert("Помилка входу! Перевірте дані.");
+            if (mode === 'reg') {
+                if (!nick) { alert("Помилка: Нікнейм обов'язковий для реєстрації!"); return; }
+                
+                const { data: authData, error: authError } = await _supabase.auth.signUp({
+                    email: email,
+                    password: pass
+                });
+
+                if (authError) {
+                    alert("Помилка реєстрації: " + authError.message);
+                    return;
+                }
+
+                // Генеруємо випадковий ID замість ручного вводу
+                const generatedId = Math.floor(Math.random() * 900000) + 100000; 
+
+                const { error: dbError } = await _supabase.from('users').insert([{ 
+                    id_number: generatedId, 
+                    email: email, // Прив'язуємо профіль до Auth Email
+                    nickname: nick, 
+                    avatar_url: av, 
+                    is_admin: false, 
+                    is_banned: false, 
+                    is_verified: false, 
+                    restrict_posts: false, 
+                    restrict_groups: false, 
+                    restrict_chat_first: false 
+                }]);
+
+                if (dbError) {
+                    alert("Помилка створення профілю: " + dbError.message);
+                } else {
+                    alert(`Акаунт створено! Ваш унікальний ID у системі: ${generatedId}. Тепер ви можете увійти.`);
+                }
+            } 
+            else if (mode === 'login') {
+                const { data, error } = await _supabase.auth.signInWithPassword({
+                    email: email,
+                    password: pass
+                });
+
+                if (error) {
+                    alert("Помилка входу! Перевірте Email або пароль.");
+                }
+            }
         }
 
-        function logout() { localStorage.removeItem('saved_user_id'); localStorage.removeItem('saved_user_pass'); location.reload(); }
+        async function logout() { 
+            await _supabase.auth.signOut(); 
+            location.reload(); 
+        }
 
         function setTheme(theme) {
             if (theme === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
@@ -841,21 +911,7 @@
             const inp = document.getElementById('msg-input');
             if(!inp.value.trim() || !currentChatId) return;
             if (currentChatId.startsWith("group_") && myRestrictGroups) { alert("Вам заборонено надсилати повідомлення в групи та спільні чати."); return; }
-            
-            const myPassword = localStorage.getItem('saved_user_pass');
-
-            const { error } = await _supabase.rpc('send_secure_message', {
-                p_sender_id: String(myId),
-                p_password: myPassword,
-                p_chat_id: currentChatId,
-                p_text: inp.value.trim()
-            });
-
-            if (error) {
-                alert("Помилка відправки: " + error.message);
-                return;
-            }
-
+            await _supabase.from('messages').insert([{ sender_id: myId, chat_id: currentChatId, text: inp.value.trim() }]);
             inp.value = ""; loadMessages();
         }
 
@@ -1520,16 +1576,14 @@
                 return;
             }
             
-            const myPassword = localStorage.getItem('saved_user_pass');
-
-            const { error } = await _supabase.rpc('send_secure_mail', {
-                p_sender_id: String(myId),
-                p_password: myPassword,
-                p_sender_email: myInternalEmail,
-                p_receiver_email: receiverEmail,
-                p_subject: subject || '(Без теми)',
-                p_body: body
-            });
+            const { error } = await _supabase
+                .from('social_mail')
+                .insert([{
+                    sender_email: myInternalEmail,
+                    receiver_email: receiverEmail,
+                    subject: subject || '(Без теми)',
+                    body: body
+                }]);
                 
             if (error) {
                 alert("Не вдалося надіслати повідомлення: " + error.message);
