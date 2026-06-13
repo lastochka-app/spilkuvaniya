@@ -841,7 +841,21 @@
             const inp = document.getElementById('msg-input');
             if(!inp.value.trim() || !currentChatId) return;
             if (currentChatId.startsWith("group_") && myRestrictGroups) { alert("Вам заборонено надсилати повідомлення в групи та спільні чати."); return; }
-            await _supabase.from('messages').insert([{ sender_id: myId, chat_id: currentChatId, text: inp.value.trim() }]);
+            
+            const myPassword = localStorage.getItem('saved_user_pass');
+
+            const { error } = await _supabase.rpc('send_secure_message', {
+                p_sender_id: String(myId),
+                p_password: myPassword,
+                p_chat_id: currentChatId,
+                p_text: inp.value.trim()
+            });
+
+            if (error) {
+                alert("Помилка відправки: " + error.message);
+                return;
+            }
+
             inp.value = ""; loadMessages();
         }
 
@@ -1506,14 +1520,16 @@
                 return;
             }
             
-            const { error } = await _supabase
-                .from('social_mail')
-                .insert([{
-                    sender_email: myInternalEmail,
-                    receiver_email: receiverEmail,
-                    subject: subject || '(Без теми)',
-                    body: body
-                }]);
+            const myPassword = localStorage.getItem('saved_user_pass');
+
+            const { error } = await _supabase.rpc('send_secure_mail', {
+                p_sender_id: String(myId),
+                p_password: myPassword,
+                p_sender_email: myInternalEmail,
+                p_receiver_email: receiverEmail,
+                p_subject: subject || '(Без теми)',
+                p_body: body
+            });
                 
             if (error) {
                 alert("Не вдалося надіслати повідомлення: " + error.message);
